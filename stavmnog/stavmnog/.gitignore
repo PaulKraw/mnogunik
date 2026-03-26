@@ -1,0 +1,12 @@
+# Конфиденциальные данные и временные файлы
+arh/
+logs/*
+data/*
+config/*
+status/*
+.venv/
+__pycache__/
+*.pyc
+gitlab-key
+gitlab-key.pub
+*.xlsx

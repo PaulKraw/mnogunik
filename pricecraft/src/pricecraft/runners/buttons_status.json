@@ -1,0 +1,34 @@
+{
+    "create_configurations": {
+        "status": "done",
+        "generated_at": "2026-03-02 17:09:47"
+    },
+    "generate_ozon_file": {
+        "status": "done",
+        "generated_at": "2026-02-21 17:21:25"
+    },
+    "update_ozon_prices": {
+        "status": "done",
+        "generated_at": "2026-02-21 17:22:08"
+    },
+    "generate_wb_file": {
+        "status": "idle",
+        "generated_at": null
+    },
+    "update_wb_prices": {
+        "status": "idle",
+        "generated_at": null
+    },
+    "generate_wb_content": {
+        "status": "idle",
+        "generated_at": null
+    },
+    "generate_ozon_content": {
+        "status": "generating",
+        "generated_at": null
+    },
+    "actualize_ozon": {
+        "status": "generating",
+        "generated_at": null
+    }
+}

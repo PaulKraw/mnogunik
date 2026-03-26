@@ -1,0 +1,24 @@
+cl_rows.csv
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+*.img
+log.txt
+start_index.txt
+
+# VS Code
+.vscode/
+
+
+# Excel / временные файлы
+*.xlsx
+*.xls
+*.xlsm
+*.csv
+
+
+# Системные файлы Windows
+Thumbs.db
+.DS_Store

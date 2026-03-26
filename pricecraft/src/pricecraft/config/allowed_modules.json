@@ -1,0 +1,14 @@
+[
+    "create_configurations",
+    "generate_ozon_content",
+    "generate_wb_content",
+    "generate_ozon_file",
+    "generate_wb_file",
+    "update_ozon_prices",
+    "update_wb_prices",
+    "actualize_ozon",
+    "receive_content"
+
+    
+]
+  
