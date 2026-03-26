@@ -1,0 +1,19 @@
+Имя в базе,цена,ОЗОН. Вариации.,РЕЙТИНГ,BrandProcessor,ModelProcessor,Бренд процессора,Число ядер процессора,"Частота процессора, ГГц",Модель процессора,Процессор*
+ryzen 5 7600x,25500,0,28698,AMD,1,AMD,6,"4,7",AMD Ryzen 5,AMD Ryzen 5 7600X
+ryzen 7 5800x,20500,0,28521,AMD,1,AMD,8,"3,8",AMD Ryzen 7,AMD Ryzen 7 5800X
+ryzen 5 7500f,20000,0,26842,AMD,1,AMD,6,"3,7",AMD Ryzen 5,AMD Ryzen 5 7500F
+i5-13400f,18500,0,25443,Intel,1,Intel,6,"2,5",Intel Core i5,Intel Core i5-13400F
+ryzen 5 5600x,15600,0,22194,AMD,1,AMD,6,"3,7",AMD Ryzen 5,AMD Ryzen 5 5600X
+ryzen 5 5500,12100,0,19550,AMD,1,AMD,6,"3,6",AMD Ryzen 5,AMD Ryzen 5 5500
+i5-12400f,15100,0,19277,Intel,1,Intel,6,"2,5",Intel Core i5,Intel Core i5-12400F
+e5-2680 v4 (i5-12400),4300,0,17754,Intel,1,Intel,14,"2,4",Intel Xeon,Intel Xeon E5-2680V4
+ryzen 5 3600,10500,0,17749,AMD,1,AMD,6,"3,6",AMD Ryzen 5,AMD Ryzen 5 3600
+i3-12100f,10500,0,14570,Intel,1,Intel,4,"3,3",Intel Core i3,Intel Core i3-12100F
+i5-10400f,10100,0,12606,Intel,1,Intel,6,"3,6",Intel Core i5,Intel Core i5-10400F
+i5-14400f,21500,0,,Intel,1,Intel,10,"2,5",Intel Core i5,Intel Core i5-14400F
+i5-12600kf,23500,0,,Intel,1,Intel,10,"3,7",Intel Core i5,Intel Core i5-12600KF
+ryzen 7 5700x,17100,0,,AMD,1,AMD,8,"3,4",AMD Ryzen 7,AMD Ryzen 7 5700X
+ryzen 7 5700x3d,30500,0,,AMD,1,AMD,8,"3,0",AMD Ryzen 7,AMD Ryzen 7 5700X3D
+i7-12700f,29000,0,,,1,Intel,12,"2,1",Intel Core i7,Intel Core i7-12700F
+ryzen 5 5600,14600,0,,,1,AMD,6,"3,5",AMD Ryzen 5,AMD Ryzen 5 5600
+ryzen 5 8400f,17600,0,,,1,AMD,6,"4,2",AMD Ryzen 5,AMD Ryzen 5 8400F

@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Ads
+     formatVersion="3"   target="Avito.ru">
+<Ad>
+<Id>ad_001</Id>
+<Title>Забор металлический</Title>
+<Description>&lt;![CDATA[&lt;p&gt;Качественный забор&lt;/p&gt;&lt;br/&gt;Прочный материал]]&gt;</Description>
+<Price>25000</Price>
+<Promo>Auto_7</Promo>
+<Category>Ремонт и строительство</Category>
+<Condition>Новое</Condition>
+<Color>
+<Option>Белый</Option>
+<Option>Красный</Option>
+</Color>
+<Images>
+<Image url="http://example.com/img1.jpg" />
+<Image url="http://example.com/img2.jpg" />
+</Images>
+<PromoAutoOptions>
+<Item>
+<Region>Москва</Region>
+<Budget>1000</Budget>
+</Item>
+<Item>
+<Region>СПб</Region>
+<Budget>2000</Budget>
+</Item>
+</PromoAutoOptions>
+</Ad>
+<Ad>
+<Id>ad_002</Id>
+<Title>Ворота распашные</Title>
+<Description>Ворота с автоматикой</Description>
+<Price>35000</Price>
+<Promo>Manual</Promo>
+<Category>Ремонт и строительство</Category>
+<Condition>Новое</Condition>
+<Color>
+<Option>Зеленый</Option>
+</Color>
+<Images>
+<Image url="http://example.com/img3.jpg" />
+</Images>
+</Ad>
+</Ads>
