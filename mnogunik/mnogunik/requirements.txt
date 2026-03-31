@@ -1,6 +1,0 @@
-pandas
-openpyxl
-pillow
-requests
-chardet
-python-dateutil
