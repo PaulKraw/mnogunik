@@ -23,11 +23,11 @@ import pandas as pd
 import requests
 
 from pricecraft.config import sheets, settings
-from pricecraft.config.secrets import (
+from shared.config import (
     SPREADSHEET_ID,
     SPREADSHEET_CLROWS_ID,
     MNOGUNIK_RUN_URL,
-    MNOGUNIK_RUN_KEY,
+    GENERATOR_WEB_KEY as MNOGUNIK_RUN_KEY,
 )
 from shared.logger import write_log, write_status
 from shared.google_sheets import upload_df_to_sheet
