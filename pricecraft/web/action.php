@@ -19,8 +19,11 @@ try {
     // Настройки — подправь пути под свое размещение
     // $PROJECT_ROOT = realpath(__DIR__ . '/..') . '/src/pricecraft'; // если фронт в WebData, поправь путь
     // Пример альтернативы: $PROJECT_ROOT = '/var/www/mnogunik.ru/code/pricecraft/src/pricecraft';
-    $PROJECT_ROOT = '/var/www/mnogunik.ru/code/pricecraft/src/pricecraft';
+   // $PROJECT_ROOT = '/var/www/mnogunik.ru/code/pricecraft/src/pricecraft';
 
+$MONOREPO_ROOT = '/var/www/mnogunik.ru/mng';
+$PROJECT_ROOT = $MONOREPO_ROOT . '/pricecraft';
+$PYTHON = $MONOREPO_ROOT . '/.venv/bin/python';
 
 
     $CONFIG_DIR = $PROJECT_ROOT . '/config';

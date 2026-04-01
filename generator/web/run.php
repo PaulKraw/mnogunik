@@ -4,8 +4,11 @@ if (($_GET['key'] ?? '') !== 'super123Lisa') {  // не меняю имён, л�
     exit('Access denied');
 }
 
-$base_dir   = '/var/www/mnogunik.ru/mnogunik';
-$go_py      = $base_dir . '/go.py';
+//$base_dir   = '/var/www/mnogunik.ru/mnogunik';
+$base_dir = '/var/www/mnogunik.ru/mng'; 
+$go_py      = $base_dir . '/generator/go.py';
+
+
 $log_file   = $base_dir . '/log.txt';
 $start_ix   = $base_dir . '/start_index.txt';
 $stop_flag  = $base_dir . '/stop.flag';
@@ -13,7 +16,7 @@ $stop_flag  = $base_dir . '/stop.flag';
 // БЫЛО: if (file_exists($stop_file)) unlink($stop_file);
 if (file_exists($stop_flag)) unlink($stop_flag);  // <-- фикс: та же переменная
 
-$python = '/var/www/mnogunik.ru/mnogunik/.venv/bin/python';
+$python = $base_dir . '/.venv/bin/python';
 
 @touch($log_file);
 @touch($start_ix);

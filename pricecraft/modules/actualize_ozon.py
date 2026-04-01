@@ -17,7 +17,9 @@ import pandas as pd
 import requests
 
 from pricecraft.config import sheets, settings
-from shared.config import SPREADSHEET_ID, OZON_HEADERS
+from shared.config import SPREADSHEET_ID
+from shared.avito_api import get_ozon_headers
+OZON_HEADERS = get_ozon_headers()
 from shared.logger import write_log, write_status
 from pricecraft.utils.button_status import finish
 from pricecraft.modules import get_config

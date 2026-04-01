@@ -13,7 +13,8 @@ import pandas as pd
 import requests
 
 from pricecraft.config import sheets, settings
-from shared.config import SPREADSHEET_ID, OZON_HEADERS, OZON_API_URL
+from shared.config import SPREADSHEET_ID
+from shared.avito_api import get_ozon_headers, OZON_PRICE_API_URL
 from shared.logger import write_log, write_status
 from shared.google_sheets import upload_df_to_sheet
 from pricecraft.utils.button_status import finish

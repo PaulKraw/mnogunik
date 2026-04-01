@@ -1,8 +1,13 @@
 <?php
 define('ACCESS_KEY', 'YOUR_SECRET_KEY');
 
-$base_dir   = __DIR__;
-$python     = $base_dir . '/.venv/bin/python';
+//$base_dir   = __DIR__;
+//$python     = $base_dir . '/.venv/bin/python';
+
+$MONOREPO_ROOT = '/var/www/mnogunik.ru/mng';
+$base_dir = $MONOREPO_ROOT;
+$python = $MONOREPO_ROOT . '/.venv/bin/python';
+
 $status_dir = $base_dir . '/status';
 $log_dir    = $base_dir . '/logs';
 

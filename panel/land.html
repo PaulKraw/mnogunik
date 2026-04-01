@@ -1,0 +1,2516 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Авито-продвижение — автоматизация заявок для бизнеса</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f5f4f0;
+  --bg2: #eceae4;
+  --surface: #ffffff;
+  --border: #d8d5cc;
+  --border2: #c9c5bb;
+  --ink: #1a1814;
+  --ink2: #3d3a34;
+  --muted: #7c7870;
+  --accent: #1a6b3a;
+  --accent-light: #e8f4ec;
+  --accent2: #c45c00;
+  --accent2-light: #fef0e6;
+  --accent3: #1a4a8a;
+  --accent3-light: #e8eef8;
+  --check: #1a6b3a;
+  --check-bg: #e8f4ec;
+  --warn: #c45c00;
+  --red: #c0392b;
+  --red-light: #fdeaea;
+  --r: 14px;
+  --r-sm: 10px;
+  --shadow: 0 2px 12px rgba(26,24,20,.08), 0 1px 3px rgba(26,24,20,.06);
+  --shadow-lg: 0 8px 40px rgba(26,24,20,.12), 0 2px 8px rgba(26,24,20,.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Golos Text', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+h1,h2,h3,h4 { font-family: 'Unbounded', sans-serif; line-height: 1.2; }
+h1 { font-size: clamp(22px, 5.5vw, 48px); font-weight: 900; }
+h2 { font-size: clamp(18px, 3.5vw, 32px); font-weight: 700; }
+h3 { font-size: clamp(14px, 2.5vw, 20px); font-weight: 600; }
+p { color: var(--ink2); }
+
+.container { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+section { padding: 48px 0; }
+
+/* ═══════════════════════════════════════════
+   STICKY PROGRESS BAR
+═══════════════════════════════════════════ */
+.progress-bar-wrap {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(26,24,20,.06);
+}
+.progress-bar-inner {
+  max-width: 860px; margin: 0 auto;
+  display: flex; align-items: center; gap: 12px;
+}
+.progress-label {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  white-space: nowrap; letter-spacing: .05em;
+}
+.progress-track { flex: 1; height: 8px; background: var(--bg2); border-radius: 100px; overflow: hidden; }
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #2ecc71);
+  border-radius: 100px; width: 0%;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+.progress-pct {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px; font-weight: 700; color: var(--accent);
+  min-width: 58px; text-align: right;
+}
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero {
+  background: var(--ink); color: #f5f4f0;
+  padding: 56px 16px 48px; position: relative; overflow: hidden;
+}
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(255,255,255,.015) 40px, rgba(255,255,255,.015) 80px);
+}
+.hero-inner { max-width: 860px; margin: 0 auto; position: relative; display: grid; grid-template-columns: 1fr 380px; gap: 32px; align-items: start; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18);
+  border-radius: 100px; padding: 5px 14px;
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: #a8d5b5; margin-bottom: 20px;
+}
+.hero h1 { color: #f5f4f0; margin-bottom: 16px; }
+.hero h1 em { font-style: normal; color: #2ecc71; display: block; }
+.hero-sub {
+  font-size: clamp(14px, 2vw, 17px); color: #a8a09a;
+  max-width: 450px; line-height: 1.7; margin-bottom: 28px;
+}
+.hero-stats { display: flex; gap: 24px; flex-wrap: wrap; margin-bottom: 32px; }
+.hero-stat { display: flex; flex-direction: column; gap: 2px; }
+.hero-stat-num { font-family: 'Unbounded', sans-serif; font-size: clamp(20px, 4vw, 32px); font-weight: 900; color: #f5f4f0; }
+.hero-stat-label { font-size: 12px; color: #7a7270; }
+.hero-cta-row { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+
+/* ═══════════════════════════════════════════
+   BUTTONS
+═══════════════════════════════════════════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 13px 24px; border-radius: var(--r-sm);
+  font-family: 'Golos Text', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; border: none; text-decoration: none;
+  transition: all .18s; -webkit-tap-highlight-color: transparent;
+}
+.btn-primary { background: #2ecc71; color: #0f1a13; }
+.btn-primary:hover { background: #27ae60; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(46,204,113,.3); }
+.btn-ghost { background: transparent; color: #a8a09a; border: 1px solid rgba(255,255,255,.18); }
+.btn-ghost:hover { background: rgba(255,255,255,.06); }
+
+/* ═══════════════════════════════════════════
+   CONTACT FORM
+═══════════════════════════════════════════ */
+.contact-section {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 28px 24px; box-shadow: var(--shadow);
+}
+.contact-section.hero-form {
+  background: rgba(255,255,255,.07); border-color: rgba(255,255,255,.15);
+}
+.contact-section.hero-form h3 { color: #f5f4f0; font-size: 16px; }
+.contact-section.hero-form .sub { color: #8a8280; }
+.contact-section.hero-form .field label { color: #8a8280; }
+.contact-section.hero-form .field input,
+.contact-section.hero-form .field textarea,
+.contact-section.hero-form .field select {
+  background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: #f5f4f0;
+}
+.contact-section.hero-form .field input:focus,
+.contact-section.hero-form .field textarea:focus {
+  border-color: #2ecc71; background: rgba(255,255,255,.1);
+}
+.contact-section.hero-form .field input::placeholder,
+.contact-section.hero-form .field textarea::placeholder { color: #5a5856; }
+.contact-section.hero-form .form-toggle { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.1); }
+.contact-section.hero-form .toggle-btn { color: #8a8280; }
+.contact-section.hero-form .toggle-btn.active { background: rgba(255,255,255,.12); color: #f5f4f0; }
+.contact-section.hero-form .msg-btn { background: rgba(255,255,255,.06); border-color: rgba(255,255,255,.12); color: #a8a09a; }
+.contact-section.hero-form .msg-btn:hover,
+.contact-section.hero-form .msg-btn.active { border-color: #2ecc71; background: rgba(46,204,113,.1); color: #2ecc71; }
+.contact-section.hero-form .form-submit { background: #2ecc71; color: #0f1a13; }
+.contact-section.hero-form .form-submit:hover { background: #27ae60; }
+.contact-section.hero-form .form-note { color: #5a5856; }
+
+.contact-section h3 { margin-bottom: 6px; font-size: 17px; }
+.contact-section .sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+.form-toggle {
+  display: flex; gap: 0; background: var(--bg2); border-radius: var(--r-sm);
+  padding: 4px; margin-bottom: 16px; border: 1px solid var(--border);
+}
+.toggle-btn {
+  flex: 1; padding: 8px 12px; border-radius: 8px; border: none;
+  background: transparent; font-family: 'Golos Text', sans-serif;
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .16s; -webkit-tap-highlight-color: transparent;
+}
+.toggle-btn.active { background: var(--surface); color: var(--ink); box-shadow: 0 1px 4px rgba(26,24,20,.12); }
+
+.form-fields { display: flex; flex-direction: column; gap: 10px; }
+.form-row { display: flex; gap: 10px; }
+.form-row .field { flex: 1; }
+.field label {
+  display: block; font-size: 12px; font-weight: 700; color: var(--muted);
+  letter-spacing: .06em; text-transform: uppercase; margin-bottom: 5px;
+}
+.field input, .field select, .field textarea {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); background: var(--bg); color: var(--ink);
+  font-family: 'Golos Text', sans-serif; font-size: 15px;
+  outline: none; transition: border-color .16s;
+  -webkit-appearance: none; appearance: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); background: var(--surface); }
+.field input::placeholder, .field textarea::placeholder { color: #b0aba4; }
+.field textarea { resize: vertical; min-height: 60px; }
+
+.messenger-panel { display: none; }
+.messenger-panel.show { display: block; }
+.phone-panel { display: block; }
+.phone-panel.hide { display: none; }
+
+.messenger-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 12px; }
+.msg-btn {
+  padding: 10px 8px; border-radius: var(--r-sm); border: 2px solid var(--border);
+  background: var(--bg); font-family: 'Golos Text', sans-serif;
+  font-size: 13px; font-weight: 600; color: var(--ink2);
+  cursor: pointer; transition: all .16s;
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.msg-btn:hover, .msg-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+.form-submit {
+  width: 100%; margin-top: 6px; padding: 14px;
+  background: var(--ink); color: #f5f4f0; border: none;
+  border-radius: var(--r-sm); font-family: 'Unbounded', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+  transition: all .18s; letter-spacing: .03em;
+  -webkit-tap-highlight-color: transparent;
+}
+.form-submit:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,107,58,.3); }
+.form-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; }
+.form-success { display: none; text-align: center; padding: 24px 0 8px; }
+.form-success .check-big { font-size: 48px; margin-bottom: 10px; }
+.form-success h4 { font-size: 16px; margin-bottom: 6px; }
+.form-success p { font-size: 14px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════
+   SECTION HEADERS
+═══════════════════════════════════════════ */
+.sec-header { margin-bottom: 28px; }
+.sec-eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.sec-header h2 { margin-bottom: 8px; }
+.sec-header p { font-size: 14px; color: var(--muted); max-width: 600px; }
+
+
+/* ═══════════════════════════════════════════
+   FAQ (for sales team)
+═══════════════════════════════════════════ */
+.faq-section { background: var(--surface); padding: 48px 0; border-top: 1px solid var(--border); }
+.faq-list { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+.faq-item {
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--bg);
+}
+.faq-q {
+  padding: 14px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.faq-q .fchev { color: var(--muted); transition: transform .2s; font-size: 13px; flex-shrink: 0; }
+.faq-item.open .fchev { transform: rotate(180deg); }
+.faq-a {
+  display: none;
+  padding: 0 16px 14px;
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.7;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.faq-item.open .faq-a { display: block; }
+
+/* ═══════════════════════════════════════════
+   PANELS OVERVIEW (3 cards)
+═══════════════════════════════════════════ */
+.panels-grid {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 24px;
+}
+.panel-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); padding: 24px 20px;
+  box-shadow: var(--shadow); transition: border-color .18s, box-shadow .18s;
+}
+.panel-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); }
+.panel-card .panel-num {
+  font-family: 'Unbounded', sans-serif; font-size: 28px; font-weight: 900;
+  color: var(--bg2); margin-bottom: 8px;
+}
+.panel-card h3 { margin-bottom: 8px; }
+.panel-card p { font-size: 13px; color: var(--muted); line-height: 1.55; }
+.panel-card.active { border-color: var(--accent); background: linear-gradient(135deg, #fafffe, var(--surface)); }
+.panel-card.active .panel-num { color: var(--accent-light); }
+
+/* ═══════════════════════════════════════════
+   FLOW STEPS (8 steps accordion)
+═══════════════════════════════════════════ */
+.flow-list { display: flex; flex-direction: column; gap: 0; }
+.step-connector { display: flex; justify-content: flex-start; padding-left: 27px; height: 28px; }
+.step-connector-line { width: 2px; background: var(--border); height: 100%; border-radius: 2px; }
+.step-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--shadow);
+  transition: border-color .2s, box-shadow .2s;
+  animation: fadeSlideIn .3s ease both;
+}
+.step-card.checked { border-color: #a8d5b5; background: linear-gradient(135deg, #fafffe, var(--surface)); }
+.step-card.checked .step-num-wrap { background: var(--check-bg); }
+.step-card.checked .step-num { color: var(--check); }
+.step-header {
+  display: flex; align-items: flex-start; gap: 14px;
+  padding: 18px 18px 16px; cursor: pointer;
+  -webkit-tap-highlight-color: transparent; user-select: none;
+}
+.step-num-wrap {
+  min-width: 40px; height: 40px; background: var(--bg2);
+  border-radius: 12px; display: flex; align-items: center;
+  justify-content: center; flex-shrink: 0; transition: background .2s;
+}
+.step-num { font-family: 'Unbounded', sans-serif; font-size: 13px; font-weight: 700; color: var(--muted); }
+.step-emoji { font-size: 22px; flex-shrink: 0; margin-top: 8px; }
+.step-head-body { flex: 1; min-width: 0; }
+.step-label { font-size: 10px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); margin-bottom: 3px; }
+.step-title { font-family: 'Unbounded', sans-serif; font-size: clamp(13px, 3vw, 17px); font-weight: 700; color: var(--ink); }
+.step-short { font-size: 13px; color: var(--muted); margin-top: 4px; }
+.step-check-area { display: flex; align-items: flex-start; gap: 10px; flex-shrink: 0; padding-top: 2px; }
+.chevron { width: 20px; height: 20px; display: flex; align-items: center; justify-content: center; color: var(--muted); transition: transform .25s; font-size: 14px; }
+.step-card.open .chevron { transform: rotate(180deg); }
+.step-checkbox {
+  width: 26px; height: 26px; border-radius: 8px; border: 2px solid var(--border2);
+  background: var(--bg); cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 14px; transition: all .18s; flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.step-checkbox:hover { border-color: var(--check); }
+.step-checkbox.done { background: var(--check); border-color: var(--check); color: white; }
+.step-body { display: none; padding: 0 18px 20px; border-top: 1px solid var(--border); padding-top: 18px; }
+.step-card.open .step-body { display: block; }
+.body-section { margin-bottom: 20px; }
+.body-section:last-child { margin-bottom: 0; }
+.body-section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 10px; display: flex; align-items: center; gap: 6px;
+}
+.body-section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.desc-block {
+  background: var(--bg); border-radius: var(--r-sm); padding: 14px 16px;
+  font-size: 14px; color: var(--ink2); line-height: 1.7; border-left: 3px solid var(--border2);
+}
+
+/* who does what */
+.who-does {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media(max-width:500px){ .who-does { grid-template-columns: 1fr; } }
+.who-card {
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.who-card.human { background: var(--accent2-light); border: 1px solid #f5cba0; }
+.who-card.machine { background: var(--accent3-light); border: 1px solid #b8c8e8; }
+.who-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.who-card.human .who-card-label { color: var(--accent2); }
+.who-card.machine .who-card-label { color: var(--accent3); }
+.who-card ul { padding-left: 16px; }
+.who-card ul li { margin-bottom: 3px; color: var(--ink2); line-height: 1.5; }
+
+
+/* example */
+.example-block {
+  background: linear-gradient(135deg, var(--accent-light), rgba(232,244,236,.4));
+  border: 1px solid #a8d5b5;
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+.example-block strong { color: var(--accent); font-weight: 700; }
+
+/* data flow */
+.data-flow { display: flex; flex-direction: column; gap: 6px; }
+.df-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.df-item { font-size: 12px; font-weight: 600; padding: 5px 11px; border-radius: 8px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
+.df-item.input { background: var(--accent2-light); border: 1px solid #f5cba0; color: var(--accent2); }
+.df-item.tool { background: var(--accent3-light); border: 1px solid #b8c8e8; color: var(--accent3); }
+.df-item.output { background: var(--accent-light); border: 1px solid #a8d5b5; color: var(--accent); }
+.df-arrow { color: var(--muted); font-size: 16px; }
+
+/* ═══════════════════════════════════════════
+   DB TABLES GRID
+═══════════════════════════════════════════ */
+.db-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-top: 24px; }
+.db-card {
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); padding: 14px; font-size: 13px;
+  transition: border-color .15s;
+}
+.db-card:hover { border-color: var(--accent); }
+.db-card .db-name { font-weight: 700; margin-bottom: 4px; }
+.db-card .db-desc { color: var(--muted); font-size: 12px; line-height: 1.4; }
+.db-card .db-badge {
+  display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: .06em;
+  text-transform: uppercase; padding: 2px 7px; border-radius: 4px; margin-top: 6px;
+}
+.db-card.done .db-badge { background: var(--accent-light); color: var(--accent); }
+.db-card.new .db-badge { background: var(--accent2-light); color: var(--accent2); }
+.db-card.group-stats { border-left: 3px solid var(--accent3); }
+.db-card.group-gen { border-left: 3px solid var(--accent); }
+.db-card.group-crm { border-left: 3px solid var(--accent2); }
+
+/* ═══════════════════════════════════════════
+   TECH STACK + RESULTS
+═══════════════════════════════════════════ */
+.tools-section { background: var(--surface); padding: 48px 0; border-top: 1px solid var(--border); }
+.tools-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; margin-top: 24px; }
+.tool-card {
+  background: var(--bg); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: 16px; display: flex; gap: 12px; align-items: flex-start;
+  transition: border-color .18s, box-shadow .18s;
+}
+.tool-card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.tool-icon { font-size: 24px; flex-shrink: 0; }
+.tool-name { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.tool-use { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+.results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin-top: 24px; }
+.result-card {
+  background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--r);
+  padding: 20px; box-shadow: var(--shadow); transition: border-color .18s, box-shadow .18s;
+}
+.result-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); }
+.result-icon { font-size: 28px; margin-bottom: 10px; }
+.result-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.result-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+/* ═══════════════════════════════════════════
+   AUTH ZONE (dark)
+═══════════════════════════════════════════ */
+.auth-zone {
+  background: var(--ink); color: #f5f4f0; padding: 56px 16px;
+  position: relative; overflow: hidden;
+}
+.auth-zone::before {
+  content: ''; position: absolute; inset: 0;
+  background: repeating-linear-gradient(-45deg, transparent, transparent 40px, rgba(255,255,255,.015) 40px, rgba(255,255,255,.015) 80px);
+}
+.auth-zone .container { position: relative; }
+.auth-zone .sec-eyebrow { color: #5a5856; }
+.auth-zone .sec-header h2 { color: #f5f4f0; }
+.auth-zone .sec-header p { color: #8a8280; }
+
+/* login box */
+.login-box {
+  max-width: 400px; margin: 0 auto 32px;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+  border-radius: var(--r); padding: 28px 24px; text-align: center;
+}
+.login-box h3 { color: #f5f4f0; margin-bottom: 16px; font-size: 16px; }
+.login-box input {
+  width: 100%; padding: 12px 14px; border-radius: var(--r-sm);
+  background: rgba(255,255,255,.06); border: 1.5px solid rgba(255,255,255,.12);
+  color: #f5f4f0; font-family: 'Golos Text', sans-serif; font-size: 15px;
+  outline: none; transition: border-color .16s; margin-bottom: 12px;
+}
+.login-box input:focus { border-color: #2ecc71; }
+.login-box input::placeholder { color: #5a5856; }
+.login-box button {
+  width: 100%; padding: 13px; border-radius: var(--r-sm); border: none;
+  background: #2ecc71; color: #0f1a13; font-family: 'Unbounded', sans-serif;
+  font-size: 13px; font-weight: 700; cursor: pointer; transition: all .18s;
+}
+.login-box button:hover { background: #27ae60; }
+.login-error { color: #e74c3c; font-size: 13px; margin-bottom: 10px; display: none; }
+.login-lockout { color: #e74c3c; font-size: 13px; display: none; }
+
+/* clients list */
+.auth-content { display: none; }
+.auth-content.visible { display: block; }
+
+.clients-list { display: flex; flex-direction: column; gap: 8px; margin-top: 20px; }
+.client-row {
+  display: grid; grid-template-columns: 8px 1fr 120px 100px 80px;
+  gap: 14px; align-items: center;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: var(--r-sm); padding: 14px 16px;
+  cursor: pointer; transition: all .15s;
+}
+.client-row:hover { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.15); }
+.client-row.expanded { background: rgba(46,204,113,.06); border-color: rgba(46,204,113,.2); }
+
+.priority-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.priority-dot.bad { background: #e74c3c; }
+.priority-dot.ok { background: #95a5a6; }
+.priority-dot.good { background: #2ecc71; }
+
+.client-name { font-weight: 700; font-size: 14px; color: #f5f4f0; }
+.client-cat { font-size: 12px; color: #7a7270; margin-top: 2px; }
+.client-cpl { font-family: 'Unbounded', sans-serif; font-size: 14px; font-weight: 700; color: #f5f4f0; text-align: right; }
+.client-delta { font-size: 12px; text-align: right; }
+.client-delta.up { color: #e74c3c; }
+.client-delta.down { color: #2ecc71; }
+.client-delta.flat { color: #95a5a6; }
+.client-expand-icon { text-align: right; color: #5a5856; font-size: 16px; transition: transform .2s; }
+.client-row.expanded .client-expand-icon { transform: rotate(180deg); }
+
+/* tracker */
+.tracker-wrap { display: none; margin-top: 4px; margin-bottom: 8px; }
+.tracker-wrap.visible { display: block; }
+.tracker-inner {
+  background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+  border-radius: var(--r); padding: 20px; margin-left: 22px;
+}
+.tracker-stats {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
+  margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.tracker-stat { text-align: center; }
+.tracker-stat-val { font-family: 'Unbounded', sans-serif; font-size: 16px; font-weight: 700; color: #f5f4f0; }
+.tracker-stat-val.green { color: #2ecc71; }
+.tracker-stat-val.yellow { color: #f1c40f; }
+.tracker-stat-label { font-size: 10px; color: #5a5856; margin-top: 2px; text-transform: uppercase; letter-spacing: .05em; }
+
+.tracker-stages { display: flex; flex-direction: column; gap: 8px; }
+.tracker-stage {
+  display: flex; gap: 12px; align-items: flex-start;
+  padding: 10px 12px; border-radius: var(--r-sm);
+  background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.04);
+  transition: background .15s;
+}
+.tracker-stage:hover { background: rgba(255,255,255,.05); }
+.stage-check {
+  width: 22px; height: 22px; border-radius: 6px; border: 2px solid rgba(255,255,255,.2);
+  background: transparent; cursor: pointer; display: flex; align-items: center;
+  justify-content: center; font-size: 12px; transition: all .18s; flex-shrink: 0; margin-top: 1px;
+  color: transparent;
+}
+.stage-check:hover { border-color: #2ecc71; }
+.stage-check.done { background: #2ecc71; border-color: #2ecc71; color: #0f1a13; }
+.stage-body { flex: 1; min-width: 0; }
+.stage-title { font-size: 13px; font-weight: 600; color: #d0d0d0; margin-bottom: 4px; }
+.stage-note-toggle {
+  font-size: 11px; color: #5a5856; cursor: pointer; transition: color .15s;
+}
+.stage-note-toggle:hover { color: #2ecc71; }
+.stage-note-area { display: none; margin-top: 8px; }
+.stage-note-area.visible { display: block; }
+.stage-note-area textarea {
+  width: 100%; padding: 10px 12px; min-height: 50px;
+  background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.08);
+  border-radius: 8px; color: #d0d0d0; font-family: 'Golos Text', sans-serif;
+  font-size: 13px; outline: none; resize: vertical; transition: border-color .15s;
+}
+.stage-note-area textarea:focus { border-color: #2ecc71; }
+.stage-note-area textarea::placeholder { color: #4a4846; }
+
+/* ═══════════════════════════════════════════
+   BOTTOM FORM (extended 8 fields)
+═══════════════════════════════════════════ */
+.bottom-contact { padding: 48px 0 64px; }
+.extended-fields { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+.ext-field { }
+.ext-field label { display: block; font-size: 13px; font-weight: 600; color: var(--ink); margin-bottom: 5px; }
+.ext-field .hint { font-size: 12px; color: var(--muted); margin-bottom: 5px; }
+.ext-field select, .ext-field textarea, .ext-field input {
+  width: 100%; padding: 11px 14px; border: 1.5px solid var(--border);
+  border-radius: var(--r-sm); background: var(--bg); color: var(--ink);
+  font-family: 'Golos Text', sans-serif; font-size: 15px; outline: none;
+  transition: border-color .16s;
+}
+.ext-field select:focus, .ext-field textarea:focus, .ext-field input:focus {
+  border-color: var(--accent); background: var(--surface);
+}
+.ext-field textarea { resize: vertical; min-height: 60px; }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  background: var(--ink); color: #7a7270; text-align: center;
+  padding: 24px 16px; font-size: 12px;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:760px) {
+  .hero-inner { grid-template-columns: 1fr; }
+  .panels-grid { grid-template-columns: 1fr; }
+  .client-row { grid-template-columns: 8px 1fr 80px; }
+  .client-cpl, .client-expand-icon { display: none; }
+  .tracker-stats { grid-template-columns: repeat(2, 1fr); }
+}
+@media(max-width:640px) {
+  section { padding: 36px 0; }
+  .hero { padding: 40px 16px 36px; }
+  .hero-stats { gap: 16px; }
+  .form-row { flex-direction: column; gap: 10px; }
+  .messenger-grid { grid-template-columns: repeat(2, 1fr); }
+  .step-header { padding: 14px 14px 12px; gap: 10px; }
+  .step-body { padding: 0 14px 16px; padding-top: 14px; }
+}
+@media(max-width:380px) {
+  .step-emoji { display: none; }
+  .messenger-grid { grid-template-columns: 1fr 1fr; }
+}
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;700;900&family=Golos+Text:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg: #f5f4f0;
+  --bg2: #eceae4;
+  --surface: #ffffff;
+  --border: #d8d5cc;
+  --border2: #c9c5bb;
+  --ink: #1a1814;
+  --ink2: #3d3a34;
+  --muted: #7c7870;
+  --accent: #1a6b3a;
+  --accent-light: #e8f4ec;
+  --accent2: #c45c00;
+  --accent2-light: #fef0e6;
+  --accent3: #1a4a8a;
+  --accent3-light: #e8eef8;
+  --check: #1a6b3a;
+  --check-bg: #e8f4ec;
+  --warn: #c45c00;
+  --r: 14px;
+  --r-sm: 10px;
+  --shadow: 0 2px 12px rgba(26,24,20,.08), 0 1px 3px rgba(26,24,20,.06);
+  --shadow-lg: 0 8px 40px rgba(26,24,20,.12), 0 2px 8px rgba(26,24,20,.08);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Golos Text', system-ui, sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ── TYPOGRAPHY ── */
+h1,h2,h3,h4 { font-family: 'Unbounded', sans-serif; line-height: 1.2; }
+h1 { font-size: clamp(22px, 5.5vw, 52px); font-weight: 900; }
+h2 { font-size: clamp(18px, 3.5vw, 32px); font-weight: 700; }
+h3 { font-size: clamp(14px, 2.5vw, 20px); font-weight: 600; }
+p { color: var(--ink2); }
+
+/* ── LAYOUT ── */
+.container { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+section { padding: 48px 0; }
+
+/* ═══════════════════════════════════════════
+   STICKY PROGRESS BAR
+═══════════════════════════════════════════ */
+.progress-bar-wrap {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 10px 16px;
+  box-shadow: 0 2px 8px rgba(26,24,20,.06);
+}
+.progress-bar-inner {
+  max-width: 860px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.progress-label {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  white-space: nowrap;
+  letter-spacing: .05em;
+}
+.progress-track {
+  flex: 1;
+  height: 8px;
+  background: var(--bg2);
+  border-radius: 100px;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), #2ecc71);
+  border-radius: 100px;
+  width: 0%;
+  transition: width .4s cubic-bezier(.4,0,.2,1);
+}
+.progress-pct {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--accent);
+  min-width: 38px;
+  text-align: right;
+}
+
+/* ═══════════════════════════════════════════
+   HERO
+═══════════════════════════════════════════ */
+.hero {
+  background: var(--ink);
+  color: #f5f4f0;
+  padding: 56px 16px 48px;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 40px,
+    rgba(255,255,255,.015) 40px,
+    rgba(255,255,255,.015) 80px
+  );
+}
+.hero-inner { max-width: 860px; margin: 0 auto; position: relative; }
+.hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255,255,255,.1);
+  border: 1px solid rgba(255,255,255,.18);
+  border-radius: 100px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: #a8d5b5;
+  margin-bottom: 20px;
+}
+.hero h1 { color: #f5f4f0; margin-bottom: 16px; }
+.hero h1 em {
+  font-style: normal;
+  color: #2ecc71;
+  display: block;
+}
+.hero-sub {
+  font-size: clamp(14px, 2vw, 17px);
+  color: #a8a09a;
+  max-width: 620px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+.hero-stats {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+}
+.hero-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.hero-stat-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(20px, 4vw, 32px);
+  font-weight: 900;
+  color: #f5f4f0;
+}
+.hero-stat-label { font-size: 12px; color: #7a7270; }
+.hero-cta-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 13px 24px;
+  border-radius: var(--r-sm);
+  font-family: 'Golos Text', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  text-decoration: none;
+  transition: all .18s;
+  -webkit-tap-highlight-color: transparent;
+}
+.btn-primary { background: #2ecc71; color: #0f1a13; }
+.btn-primary:hover { background: #27ae60; transform: translateY(-1px); box-shadow: 0 4px 16px rgba(46,204,113,.3); }
+.btn-ghost { background: transparent; color: #a8a09a; border: 1px solid rgba(255,255,255,.18); }
+.btn-ghost:hover { background: rgba(255,255,255,.06); }
+
+/* ═══════════════════════════════════════════
+   CONTACT FORM (top + bottom)
+═══════════════════════════════════════════ */
+.contact-section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px 24px;
+  box-shadow: var(--shadow);
+}
+.contact-section.top-form { margin-top: 32px; }
+.contact-section h3 { margin-bottom: 6px; font-size: 17px; }
+.contact-section .sub { font-size: 13px; color: var(--muted); margin-bottom: 20px; }
+
+.form-toggle {
+  display: flex;
+  gap: 0;
+  background: var(--bg2);
+  border-radius: var(--r-sm);
+  padding: 4px;
+  margin-bottom: 16px;
+  border: 1px solid var(--border);
+}
+.toggle-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  font-family: 'Golos Text', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .16s;
+  -webkit-tap-highlight-color: transparent;
+}
+.toggle-btn.active {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 0 1px 4px rgba(26,24,20,.12);
+}
+
+.form-fields { display: flex; flex-direction: column; gap: 10px; }
+.form-row { display: flex; gap: 10px; }
+.form-row .field { flex: 1; }
+.field label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+.field input, .field select, .field textarea {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Golos Text', sans-serif;
+  font-size: 15px;
+  outline: none;
+  transition: border-color .16s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+.field input::placeholder, .field textarea::placeholder { color: #b0aba4; }
+
+.messenger-panel { display: none; }
+.messenger-panel.show { display: block; }
+.phone-panel { display: block; }
+.phone-panel.hide { display: none; }
+
+.messenger-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.msg-btn {
+  padding: 10px 8px;
+  border-radius: var(--r-sm);
+  border: 2px solid var(--border);
+  background: var(--bg);
+  font-family: 'Golos Text', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink2);
+  cursor: pointer;
+  transition: all .16s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  -webkit-tap-highlight-color: transparent;
+}
+.msg-btn:hover, .msg-btn.active { border-color: var(--accent); background: var(--accent-light); color: var(--accent); }
+
+.form-submit {
+  width: 100%;
+  margin-top: 6px;
+  padding: 14px;
+  background: var(--ink);
+  color: #f5f4f0;
+  border: none;
+  border-radius: var(--r-sm);
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .18s;
+  letter-spacing: .03em;
+  -webkit-tap-highlight-color: transparent;
+}
+.form-submit:hover { background: var(--accent); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(26,107,58,.3); }
+.form-note { font-size: 12px; color: var(--muted); text-align: center; margin-top: 8px; }
+
+.form-success {
+  display: none;
+  text-align: center;
+  padding: 24px 0 8px;
+}
+.form-success .check-big { font-size: 48px; margin-bottom: 10px; }
+.form-success h4 { font-size: 16px; margin-bottom: 6px; }
+.form-success p { font-size: 14px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════
+   SECTION HEADER
+═══════════════════════════════════════════ */
+.sec-header { margin-bottom: 28px; }
+.sec-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+.sec-header h2 { margin-bottom: 8px; }
+.sec-header p { font-size: 14px; color: var(--muted); max-width: 600px; }
+
+/* ═══════════════════════════════════════════
+   FLOW STEPS
+═══════════════════════════════════════════ */
+.flow-list { display: flex; flex-direction: column; gap: 0; }
+
+/* connector line */
+.step-connector {
+  display: flex;
+  justify-content: flex-start;
+  padding-left: 27px;
+  height: 28px;
+}
+.step-connector-line {
+  width: 2px;
+  background: var(--border);
+  height: 100%;
+  border-radius: 2px;
+}
+
+/* STEP CARD */
+.step-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--shadow);
+  transition: border-color .2s, box-shadow .2s;
+}
+.step-card.checked {
+  border-color: #a8d5b5;
+  background: linear-gradient(135deg, #fafffe, var(--surface));
+}
+.step-card.checked .step-num-wrap { background: var(--check-bg); }
+.step-card.checked .step-num { color: var(--check); }
+
+/* step header row */
+.step-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 18px 16px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.step-num-wrap {
+  min-width: 40px;
+  height: 40px;
+  background: var(--bg2);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.step-num {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+}
+.step-emoji { font-size: 22px; flex-shrink: 0; margin-top: 8px; }
+
+.step-head-body { flex: 1; min-width: 0; }
+.step-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.step-title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 4px;
+}
+.step-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(13px, 3vw, 17px);
+  font-weight: 700;
+  color: var(--ink);
+}
+.step-short { font-size: 13px; color: var(--muted); }
+
+.step-check-area {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-shrink: 0;
+  padding-top: 2px;
+}
+.chevron {
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: transform .25s;
+  font-size: 14px;
+}
+.step-card.open .chevron { transform: rotate(180deg); }
+
+/* CHECKBOX */
+.step-checkbox {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 2px solid var(--border2);
+  background: var(--bg);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  transition: all .18s;
+  flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+}
+.step-checkbox:hover { border-color: var(--check); }
+.step-checkbox.done {
+  background: var(--check);
+  border-color: var(--check);
+  color: white;
+}
+
+/* STEP BODY / ACCORDION */
+.step-body {
+  display: none;
+  padding: 0 18px 20px;
+  border-top: 1px solid var(--border);
+  padding-top: 18px;
+}
+.step-card.open .step-body { display: block; }
+
+/* ── BODY CONTENT BLOCKS ── */
+.body-section { margin-bottom: 20px; }
+.body-section:last-child { margin-bottom: 0; }
+.body-section-title {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.body-section-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.desc-block {
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  padding: 14px 16px;
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.7;
+  border-left: 3px solid var(--border2);
+}
+
+/* who does what */
+.who-does {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media(max-width:500px){ .who-does { grid-template-columns: 1fr; } }
+.who-card {
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.who-card.human { background: var(--accent2-light); border: 1px solid #f5cba0; }
+.who-card.machine { background: var(--accent3-light); border: 1px solid #b8c8e8; }
+.who-card-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.who-card.human .who-card-label { color: var(--accent2); }
+.who-card.machine .who-card-label { color: var(--accent3); }
+.who-card ul { padding-left: 16px; }
+.who-card ul li { margin-bottom: 3px; color: var(--ink2); line-height: 1.5; }
+
+/* data flow */
+.data-flow {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.df-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.df-item {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 11px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+}
+.df-item.input { background: var(--accent2-light); border: 1px solid #f5cba0; color: var(--accent2); }
+.df-item.tool { background: var(--accent3-light); border: 1px solid #b8c8e8; color: var(--accent3); }
+.df-item.output { background: var(--accent-light); border: 1px solid #a8d5b5; color: var(--accent); }
+.df-arrow { color: var(--muted); font-size: 16px; }
+
+/* split col */
+.split-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+@media(max-width:520px){ .split-cols { grid-template-columns: 1fr; } }
+.split-col-card {
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+}
+.split-col-card.service { background: var(--accent3-light); border: 1px solid #b8c8e8; }
+.split-col-card.goods { background: var(--accent2-light); border: 1px solid #f5cba0; }
+.split-col-card .sc-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.split-col-card.service .sc-label { color: var(--accent3); }
+.split-col-card.goods .sc-label { color: var(--accent2); }
+.split-col-card ul { padding-left: 16px; }
+.split-col-card ul li { margin-bottom: 4px; color: var(--ink2); line-height: 1.5; }
+
+/* example */
+.example-block {
+  background: linear-gradient(135deg, var(--accent-light), rgba(232,244,236,.4));
+  border: 1px solid #a8d5b5;
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  font-size: 13px;
+  color: var(--ink2);
+  line-height: 1.65;
+}
+.example-block strong { color: var(--accent); font-weight: 700; }
+
+/* tips */
+.tips-list { display: flex; flex-direction: column; gap: 7px; }
+.tip-item {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  font-size: 13px;
+  color: var(--ink2);
+  padding: 10px 12px;
+  background: var(--bg);
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+}
+.tip-icon { flex-shrink: 0; font-size: 15px; margin-top: 1px; }
+
+/* metrics */
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+.metric-card {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 12px 14px;
+  text-align: center;
+}
+.metric-formula {
+  font-family: 'Unbounded', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 4px;
+  letter-spacing: .02em;
+}
+.metric-name { font-size: 12px; color: var(--muted); }
+
+/* ═══════════════════════════════════════════
+   TOOLS SECTION
+═══════════════════════════════════════════ */
+.tools-section { background: var(--surface); padding: 48px 0; border-top: 1px solid var(--border); }
+.tools-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+.tool-card {
+  background: var(--bg);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  transition: border-color .18s, box-shadow .18s;
+}
+.tool-card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+.tool-icon { font-size: 24px; flex-shrink: 0; }
+.tool-name { font-weight: 700; font-size: 14px; margin-bottom: 3px; }
+.tool-use { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+/* ═══════════════════════════════════════════
+   RESULTS SECTION
+═══════════════════════════════════════════ */
+.results-section { padding: 48px 0; }
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  margin-top: 24px;
+}
+.result-card {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  transition: border-color .18s, box-shadow .18s;
+}
+.result-card:hover { border-color: var(--accent); box-shadow: var(--shadow-lg); }
+.result-icon { font-size: 28px; margin-bottom: 10px; }
+.result-title { font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+.result-desc { font-size: 13px; color: var(--muted); line-height: 1.55; }
+
+/* ═══════════════════════════════════════════
+   FAQ (for sales team)
+═══════════════════════════════════════════ */
+.faq-section { background: var(--surface); padding: 48px 0; border-top: 1px solid var(--border); }
+.faq-list { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+.faq-item {
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--bg);
+}
+.faq-q {
+  padding: 14px 16px;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+.faq-q .fchev { color: var(--muted); transition: transform .2s; font-size: 13px; flex-shrink: 0; }
+.faq-item.open .fchev { transform: rotate(180deg); }
+.faq-a {
+  display: none;
+  padding: 0 16px 14px;
+  font-size: 14px;
+  color: var(--ink2);
+  line-height: 1.7;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.faq-item.open .faq-a { display: block; }
+
+/* ═══════════════════════════════════════════
+   BOTTOM CONTACT
+═══════════════════════════════════════════ */
+.bottom-contact { padding: 48px 0 64px; }
+
+/* ═══════════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════════ */
+footer {
+  background: var(--ink);
+  color: #7a7270;
+  text-align: center;
+  padding: 24px 16px;
+  font-size: 12px;
+}
+
+/* ═══════════════════════════════════════════
+   RESPONSIVE
+═══════════════════════════════════════════ */
+@media(max-width:640px) {
+  section { padding: 36px 0; }
+  .hero { padding: 40px 16px 36px; }
+  .hero-stats { gap: 16px; }
+  .form-row { flex-direction: column; gap: 10px; }
+  .messenger-grid { grid-template-columns: repeat(2, 1fr); }
+  .step-header { padding: 14px 14px 12px; gap: 10px; }
+  .step-body { padding: 0 14px 16px; padding-top: 14px; }
+  .who-does { grid-template-columns: 1fr; }
+  .df-row { gap: 6px; }
+}
+@media(max-width:380px) {
+  .step-emoji { display: none; }
+  .messenger-grid { grid-template-columns: 1fr 1fr; }
+}
+
+/* animations */
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.step-card { animation: fadeSlideIn .3s ease both; }
+.step-card:nth-child(1) { animation-delay: .05s; }
+.step-card:nth-child(2) { animation-delay: .1s; }
+.step-card:nth-child(3) { animation-delay: .15s; }
+.step-card:nth-child(4) { animation-delay: .2s; }
+.step-card:nth-child(5) { animation-delay: .25s; }
+.step-card:nth-child(6) { animation-delay: .3s; }
+.step-card:nth-child(7) { animation-delay: .35s; }
+.step-card:nth-child(8) { animation-delay: .4s; }
+</style>
+</head>
+<body>
+
+<!-- ═══ STICKY PROGRESS ═══ -->
+<div class="progress-bar-wrap">
+  <div class="progress-bar-inner">
+    <span class="progress-label">Прогресс</span>
+    <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+    <span class="progress-pct" id="progressPct">0 из 8</span>
+  </div>
+</div>
+
+<!-- ═══ HERO ═══ -->
+<div class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-badge">⚡ Автоматизация продаж на Авито</div>
+      <h1>Из прайс-листа<em>в поток заявок</em></h1>
+      <p class="hero-sub">Система генерирует тысячи уникальных объявлений, публикует, собирает статистику и оптимизирует ставки — вы получаете заявки, а не рутину.</p>
+
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <span class="hero-stat-num">3 000</span>
+          <span class="hero-stat-label">объявлений за 30 минут</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">10+</span>
+          <span class="hero-stat-label">клиентов одновременно</span>
+        </div>
+        <div class="hero-stat">
+          <span class="hero-stat-num">24/7</span>
+          <span class="hero-stat-label">мониторинг и оптимизация</span>
+        </div>
+      </div>
+
+      <div class="hero-cta-row">
+        <a href="#contact-bottom" class="btn btn-primary">📩 Обсудить проект</a>
+        <a href="#flow" class="btn btn-ghost">↓ Как это работает</a>
+      </div>
+    </div>
+
+    <!-- HERO FORM -->
+    <div class="contact-section hero-form" id="contact-top">
+      <h3>Оставьте контакт — обсудим задачу</h3>
+      <p class="sub">Позвоним или напишем в мессенджер — как удобнее.</p>
+
+      <div class="form-toggle">
+        <button class="toggle-btn active" onclick="Panel3.switchForm('phone', this, 'top')">📞 Телефон</button>
+        <button class="toggle-btn" onclick="Panel3.switchForm('messenger', this, 'top')">💬 Мессенджер</button>
+      </div>
+
+      <div id="phonePanel-top" class="phone-panel">
+        <div class="form-fields">
+          <div class="form-row">
+            <div class="field"><label>Имя</label><input type="text" placeholder="Как вас зовут?"></div>
+            <div class="field"><label>Телефон</label><input type="tel" placeholder="+7 (___) ___-__-__"></div>
+          </div>
+          <div class="field"><label>Коротко о задаче</label><input type="text" placeholder="Например: заборы, 200 позиций, нужны заявки"></div>
+        </div>
+      </div>
+
+      <div id="messengerPanel-top" class="messenger-panel">
+        <div class="messenger-grid">
+          <button class="msg-btn" onclick="Panel3.selectMessenger(this, 'top')">💚 WhatsApp</button>
+          <button class="msg-btn" onclick="Panel3.selectMessenger(this, 'top')">✈️ Telegram</button>
+          <button class="msg-btn" onclick="Panel3.selectMessenger(this, 'top')">💙 ВКонтакте</button>
+        </div>
+        <div class="form-fields">
+          <div class="form-row">
+            <div class="field"><label>Имя</label><input type="text" placeholder="Как вас зовут?"></div>
+            <div class="field"><label>Ник или номер</label><input type="text" placeholder="@username или +7..."></div>
+          </div>
+          <div class="field"><label>Коротко о задаче</label><input type="text" placeholder="Что продаёте / какие услуги"></div>
+        </div>
+      </div>
+
+      <button class="form-submit" onclick="Panel3.submitForm('top')">Отправить заявку →</button>
+      <p class="form-note">🔒 Без спама. Данные только для связи.</p>
+      <div class="form-success" id="success-top">
+        <div class="check-big">✅</div>
+        <h4>Заявка принята!</h4>
+        <p>Свяжемся в течение рабочего дня.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ THREE PANELS OVERVIEW ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Архитектура</div>
+      <h2>Три панели системы</h2>
+      <p>Каждая панель решает свою задачу — вместе они покрывают весь цикл от настройки до результата.</p>
+    </div>
+    <div class="panels-grid">
+      <div class="panel-card">
+        <div class="panel-num">01</div>
+        <h3>Настройка и генерация</h3>
+        <p>Клиенты, аккаунты, прайсы, гипотезы. Запуск генерации объявлений. Управление шаблонами текстов и картинок.</p>
+      </div>
+      <div class="panel-card">
+        <div class="panel-num">02</div>
+        <h3>Аналитика и ставки</h3>
+        <p>Трёхуровневая иерархия объявлений. Метрики за 7 дней. Автоматический расчёт и применение ставок.</p>
+      </div>
+      <div class="panel-card active">
+        <div class="panel-num">03</div>
+        <h3>Лендинг и CRM</h3>
+        <p>Сбор заявок, трекер этапов по клиентам, статистика и заметки для отдела продаж. Вы сейчас здесь.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ═══ 8 STEPS ═══ -->
+<!-- <section id="flow">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Процесс</div>
+      <h2>8 этапов работы</h2>
+      <p>Прозрачный процесс: от получения прайса до оптимизации. Отмечайте выполненные этапы.</p>
+    </div>
+    <div class="flow-list" id="flowList">-->
+      <!-- Steps injected by JS -->
+   <!--  </div>
+  </div>
+</section> -->
+
+1
+<!-- FLOW SECTION -->
+<section id="flow">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Как это работает</div>
+      <h2>8 этапов: от данных до заявок</h2>
+      <p>Разверните каждый этап, чтобы увидеть детали — кто что делает, какие инструменты используются и что получается на выходе. Отмечайте выполненные этапы галочкой.</p>
+    </div>
+
+    <div class="flow-list" id="flowList">
+
+      <!-- ══ STEP 1 ══ -->
+      <div class="step-card" id="step-1">
+        <div class="step-header" onclick="Panel3.toggleStep(1)">
+          <div class="step-num-wrap"><span class="step-num">01</span></div>
+          <div class="step-emoji">📋</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 11 · Подготовка</div>
+            <div class="step-title-row">
+              <span class="step-title">Прайс-лист и каталог</span>
+            </div>
+            <div class="step-short">Собираем все товары и услуги в единую таблицу-основу</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="toggleCheck(event,1)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              Всё начинается с данных о товарах или услугах. Нужно собрать полную таблицу, где каждая строчка — это один конкретный товар или услуга со всеми характеристиками. Это будет «база» — из неё будут созданы все объявления.
+              <br><br>
+              Если товар продаётся в разных конфигурациях (например, хлеб ржаной 400 г и 700 г, или компьютер с SSD 256 ГБ и 512 ГБ) — используется инструмент <strong>pricecraft</strong>, который автоматически «разворачивает» все комбинации в отдельные строки. Каждая строка = один SKU (отдельная позиция).
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Кто что делает</div>
+            <div class="who-does">
+              <div class="who-card human">
+                <div class="who-card-label">👤 Человек (вы / клиент)</div>
+                <ul>
+                  <li>Предоставляет прайс-лист (Excel, Google Sheets или просто список)</li>
+                  <li>Указывает города присутствия</li>
+                  <li>Указывает категорию товаров/услуг</li>
+                  <li>Согласовывает базовые цены</li>
+                </ul>
+              </div>
+              <div class="who-card machine">
+                <div class="who-card-label">🤖 Специалист + скрипты</div>
+                <ul>
+                  <li>Приводит данные к нужному формату</li>
+                  <li>Запускает pricecraft для разворачивания конфигураций</li>
+                  <li>Сохраняет результат как <code>catalog.csv</code> в базу данных</li>
+                  <li>Проверяет полноту и корректность данных</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">📥 Прайс от клиента (Excel/Sheets)</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🔧 pricecraft + Python</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">📄 catalog.csv (база SKU)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Пример</div>
+            <div class="example-block">
+              <strong>Услуга «Испечение хлеба»:</strong> одна строка — название, описание, город, цена от 500₽/кг.<br>
+              <strong>Товар «Хлеб и пироги»:</strong> хлеб ржаной 400г — строка 1, хлеб ржаной 700г — строка 2, пирог с яблоком 500г — строка 3, пирог с вишней 500г — строка 4. Итого 4 SKU из одного прайса.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Что нужно от вас</div>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-icon">✅</span>Список товаров/услуг с ценами в любом виде (Excel, Google Таблицы, Word, даже фото прайса)</div>
+              <div class="tip-item"><span class="tip-icon">✅</span>Список городов, где хотите размещаться</div>
+              <div class="tip-item"><span class="tip-icon">✅</span>Примерное описание целевой аудитории (кто ваш покупатель)</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 2 ══ -->
+      <div class="step-card" id="step-2">
+        <div class="step-header" onclick="Panel3.toggleStep(2)">
+          <div class="step-num-wrap"><span class="step-num">02</span></div>
+          <div class="step-emoji">💡</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 2 · Контент</div>
+            <div class="step-title-row">
+              <span class="step-title">Маркетинговые гипотезы</span>
+            </div>
+            <div class="step-short">Создаём несколько вариантов объявлений для тестирования</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,2)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              Одного текста недостаточно — непонятно, что сработает лучше. Поэтому создаётся <strong>несколько вариантов</strong> (гипотез): разные заголовки, описания, картинки. Потом их публикуют и смотрят, какой приносит больше кликов и звонков при меньших затратах.
+              <br><br>
+              Тексты генерирует <strong>Claude API (нейросеть)</strong> — она получает характеристики товара и шаблон, и создаёт уникальный продающий текст для каждого объявления. Картинки формируются автоматически из шаблона: берётся заготовка (фон, логотип) и на неё подставляется цена, скидка или ключевая характеристика.
+              <br><br>
+              Кроме текста и картинки, у каждого объявления должны быть <strong>уникальные поля</strong> — Авито проверяет, не является ли новое объявление копией существующего. Поэтому скрипт генерирует случайные значения: например, артикул «АВТ-7842», вес «0.41 кг», высота «18.2 см».
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Кто что делает</div>
+            <div class="who-does">
+              <div class="who-card human">
+                <div class="who-card-label">👤 Специалист</div>
+                <ul>
+                  <li>Формулирует 2–4 гипотезы: «акцент на скорость», «акцент на натуральность», «акцент на цену»</li>
+                  <li>Задаёт шаблоны промптов для Claude API</li>
+                  <li>Проверяет и при необходимости редактирует сгенерированные тексты</li>
+                  <li>Готовит шаблоны картинок (один раз)</li>
+                </ul>
+              </div>
+              <div class="who-card machine">
+                <div class="who-card-label">🤖 Claude API + Python</div>
+                <ul>
+                  <li>Генерирует уникальный текст для каждого SKU × каждой гипотезы</li>
+                  <li>Создаёт картинки через Pillow: подставляет цену, текст, характеристики</li>
+                  <li>Генерирует уникальные поля через Python random</li>
+                  <li>Сохраняет все варианты в <code>variants.csv</code></li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">📄 catalog.csv</span>
+                <span class="df-arrow">+</span>
+                <span class="df-item input">📝 Шаблоны текстов</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🤖 Claude API</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">📝 Уникальные тексты</span>
+              </div>
+              <div class="df-row">
+                <span class="df-item input">🖼️ Шаблон картинки</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🖼️ Pillow (PIL)</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">🖼️ Готовые картинки</span>
+              </div>
+              <div class="df-row">
+                <span class="df-item tool">🎲 Python random</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">🔢 Уникальные поля (артикул, вес, высота)</span>
+              </div>
+              <div class="df-row">
+                <span class="df-item output">📄 variants.csv (все варианты для публикации)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Пример гипотез</div>
+            <div class="example-block">
+              <strong>Услуга:</strong><br>
+              Гипотеза А: «Свежий хлеб на заказ — выпекаем за 3 часа, доставим горячим»<br>
+              Гипотеза Б: «Домашняя выпечка без консервантов — хлеб и пироги по бабушкиным рецептам»<br><br>
+              <strong>Товар:</strong><br>
+              Гипотеза А: «Ржаной хлеб 400г — только мука, вода, соль. Без дрожжей» (акцент: состав)<br>
+              Гипотеза Б: «Хлеб ржаной 400г — 89₽. Свежая выпечка каждый день» (акцент: цена)
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 3 ══ -->
+      <div class="step-card" id="step-3">
+        <div class="step-header" onclick="Panel3.toggleStep(3)">
+          <div class="step-num-wrap"><span class="step-num">03</span></div>
+          <div class="step-emoji">🚀</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 3 · Размещение</div>
+            <div class="step-title-row">
+              <span class="step-title">Публикация объявлений</span>
+            </div>
+            <div class="step-short">Два разных пути для услуг (через API) и товаров (через XML)</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,3)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              Готовые варианты объявлений нужно опубликовать на Авито. Здесь процесс разделяется на два пути в зависимости от типа: услуги публикуются через <strong>API Авито</strong> (прямое подключение через интернет), а товары — через <strong>XML-выгрузку</strong> (файл с данными, который загружается на FTP-сервер Авито).
+              <br><br>
+              Для каждого города создаётся отдельное объявление. После публикации Авито возвращает уникальный номер объявления (<code>avito_ad_id</code>) — его сохраняем в своей базе данных. Это нужно для дальнейшего сбора статистики.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Два пути публикации</div>
+            <div class="split-cols">
+              <div class="split-col-card service">
+                <div class="sc-label">🛎️ Услуга: «Испечение хлеба»</div>
+                <ul>
+                  <li>Python-скрипт отправляет POST-запрос к API Авито</li>
+                  <li>Передаёт: текст, картинку (URL на хостинге), ставку за показ</li>
+                  <li>Авито отвечает: <code>avito_ad_id: 3847562</code></li>
+                  <li>Сохраняем ID в базу данных</li>
+                  <li>Для Москвы — одно объявление, для Питера — другое</li>
+                </ul>
+              </div>
+              <div class="split-col-card goods">
+                <div class="sc-label">🛒 Товар: «Хлеб и пироги»</div>
+                <ul>
+                  <li>Скрипт формирует XML-файл со всеми SKU: тексты, картинки, города, уникальные поля, ставки</li>
+                  <li>Файл загружается на FTP-сервер Авито</li>
+                  <li>Авито обрабатывает файл раз в час</li>
+                  <li>После обработки получаем <code>avito_ad_id</code> для каждого SKU</li>
+                  <li>Сохраняем все ID в базу данных</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">📄 variants.csv</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🔌 API Авито</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">💾 avito_ad_id в БД (услуги)</span>
+              </div>
+              <div class="df-row">
+                <span class="df-item input">📄 variants.csv</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">📄 XML → FTP Авито</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">💾 avito_ad_id в БД (товары)</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Важно знать (для отдела продаж)</div>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-icon">ℹ️</span>API — это прямое автоматическое подключение к Авито. Не нужно вручную заходить в кабинет и нажимать кнопки — скрипт делает всё сам.</div>
+              <div class="tip-item"><span class="tip-icon">ℹ️</span>XML-выгрузка — стандартный способ для магазинов. Файл описывает все товары, и Авито сам их обрабатывает. Обновление происходит автоматически раз в час.</div>
+              <div class="tip-item"><span class="tip-icon">⚠️</span>Авито иногда блокирует объявления — даже без нарушений. На этот случай есть автоматическое пересоздание (см. Этап 4).</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 4 ══ -->
+      <div class="step-card" id="step-4">
+        <div class="step-header" onclick="Panel3.toggleStep(4)">
+          <div class="step-num-wrap"><span class="step-num">04</span></div>
+          <div class="step-emoji">📊</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 4 · Мониторинг</div>
+            <div class="step-title-row">
+              <span class="step-title">Сбор статистики</span>
+            </div>
+            <div class="step-short">Ежедневно собираем данные по каждому объявлению: показы, клики, контакты</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,4)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              Каждый день запускается скрипт, который проходит по всем объявлениям в нашей базе и запрашивает у Авито статистику: сколько раз показали объявление, сколько человек кликнули, сколько написали или позвонили, сколько денег потрачено.
+              <br><br>
+              Данные сохраняются в базу данных (SQLite — это файл на компьютере, работающий как таблица). Каждая строчка — это один день, одно объявление. Накопленная история позволяет увидеть динамику и сравнивать варианты.
+              <br><br>
+              Если объявление заблокировано Авито — это фиксируется. Автоматически создаётся новое объявление для того же товара, но с изменёнными уникальными полями (другой артикул, другой вес). Новый <code>avito_ad_id</code> привязывается к тому же внутреннему ID — статистика не теряется.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Кто что делает</div>
+            <div class="who-does">
+              <div class="who-card human">
+                <div class="who-card-label">👤 Специалист</div>
+                <ul>
+                  <li>Настраивает расписание запуска скрипта (раз в день или чаще)</li>
+                  <li>Контролирует, что сбор проходит без ошибок</li>
+                  <li>При необходимости — вручную проверяет подозрительные блокировки</li>
+                </ul>
+              </div>
+              <div class="who-card machine">
+                <div class="who-card-label">🤖 Python + API Авито</div>
+                <ul>
+                  <li>Автоматически обходит все avito_ad_id из базы</li>
+                  <li>Запрашивает у Авито статистику за последние сутки</li>
+                  <li>Записывает данные в SQLite с датой и ID объявления</li>
+                  <li>Проверяет статус каждого объявления — не заблокировано ли</li>
+                  <li>При блокировке — создаёт новое объявление автоматически</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">💾 avito_ad_id из БД</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🔌 API Авито (статистика)</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">💾 SQLite: показы, клики, контакты, затраты по дням</span>
+              </div>
+              <div class="df-row">
+                <span class="df-item input">❌ Заблокированное объявление</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🔄 Скрипт пересоздания</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">✅ Новый avito_ad_id, статистика сохранена</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Что собирается</div>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-icon">👁️</span><strong>Показы</strong> — сколько раз объявление появилось перед пользователями Авито</div>
+              <div class="tip-item"><span class="tip-icon">🖱️</span><strong>Клики</strong> — сколько человек перешли на объявление</div>
+              <div class="tip-item"><span class="tip-icon">📞</span><strong>Контакты</strong> — сколько человек написали или попросили показать номер телефона</div>
+              <div class="tip-item"><span class="tip-icon">💸</span><strong>Затраты</strong> — сколько денег списалось за день по этому объявлению</div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 5 ══ -->
+      <div class="step-card" id="step-5">
+        <div class="step-header" onclick="Panel3.toggleStep(5)">
+          <div class="step-num-wrap"><span class="step-num">05</span></div>
+          <div class="step-emoji">🔬</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 5 · Анализ</div>
+            <div class="step-title-row">
+              <span class="step-title">Анализ гипотез</span>
+            </div>
+            <div class="step-short">Сравниваем варианты объявлений по CTR, цене контакта и CPA</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,5)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              Накопленная статистика агрегируется по гипотезам (вариантам объявлений). Если одна гипотеза была и заблокирована, и пересоздана — показатели нового и старого объявления складываются, чтобы видеть полную картину.
+              <br><br>
+              Для каждой гипотезы считаются три ключевые метрики: CTR (интерес аудитории), цена контакта (эффективность бюджета) и CPA (стоимость сделки, если есть данные из CRM). По ним можно быстро понять, какой вариант работает лучше.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Ключевые метрики</div>
+            <div class="metrics-grid">
+              <div class="metric-card">
+                <div class="metric-formula">CTR = клики / показы × 100%</div>
+                <div class="metric-name">Кликабельность — насколько объявление привлекательно</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-formula">CPL = затраты / контакты</div>
+                <div class="metric-name">Цена за контакт — во сколько обходится один звонок/сообщение</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-formula">CPA = затраты / продажи</div>
+                <div class="metric-name">Стоимость сделки — если подключена CRM с данными о продажах</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Пример анализа</div>
+            <div class="example-block">
+              <strong>Услуга «Испечение хлеба» — результаты за 7 дней:</strong><br><br>
+              Гипотеза А «Свежий хлеб за 3 часа»: CTR 1.8%, контакт 43₽ → <strong style="color:#1a6b3a">ЛИДЕР 🏆</strong><br>
+              Гипотеза Б «Домашняя выпечка»: CTR 0.4%, контакт 210₽ → <strong style="color:#c45c00">Отключить ❌</strong><br><br>
+              Вывод: Акцент на скорость и конкретную пользу работает лучше, чем общие слова про «домашнее».
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">💾 SQLite статистика</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🐼 pandas / Python</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">📊 Таблица CTR, CPL, CPA по каждой гипотезе</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 6 ══ -->
+      <div class="step-card" id="step-6">
+        <div class="step-header" onclick="Panel3.toggleStep(6)">
+          <div class="step-num-wrap"><span class="step-num">06</span></div>
+          <div class="step-emoji">⚖️</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 6 · Оптимизация</div>
+            <div class="step-title-row">
+              <span class="step-title">Управление ставками</span>
+            </div>
+            <div class="step-short">Поднимаем ставки у эффективных объявлений, снижаем у слабых</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,6)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              На Авито объявления конкурируют за позиции — чем выше ставка (бюджет в день), тем чаще и выше показывается объявление. Задача — найти баланс: не тратить деньги на слабые объявления и усилить показ тех, что приносят дешёвые контакты.
+              <br><br>
+              Правило простое: если объявление кликают и звонят — повышаем ставку, чтобы его видело больше людей. Если не кликают — снижаем или останавливаем, пока не поймём причину или не сделаем новую гипотезу.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Правила принятия решений</div>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-icon">📈</span><strong>CTR &gt; 1% + цена контакта низкая:</strong> повысить ставку на 10–20%. Объявление работает — даём ему больше показов.</div>
+              <div class="tip-item"><span class="tip-icon">📉</span><strong>CTR &lt; 0.5% + потрачено больше лимита:</strong> снизить ставку или поставить на паузу. Не работает — не тратим деньги.</div>
+              <div class="tip-item"><span class="tip-icon">🔄</span><strong>Гипотеза провальная:</strong> заменить на новую. Возвращаемся к Этапу 2, делаем другой текст/картинку.</div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Как технически меняются ставки</div>
+            <div class="split-cols">
+              <div class="split-col-card service">
+                <div class="sc-label">🛎️ Услуги (API)</div>
+                <ul>
+                  <li>Запускается Python-скрипт</li>
+                  <li>Скрипт отправляет команду в API Авито: «для объявления ID xxx установить ставку Y рублей»</li>
+                  <li>Авито применяет изменения мгновенно</li>
+                </ul>
+              </div>
+              <div class="split-col-card goods">
+                <div class="sc-label">🛒 Товары (XML)</div>
+                <ul>
+                  <li>В XML-файле меняется значение ставки для нужных позиций</li>
+                  <li>Обновлённый файл загружается на FTP Авито</li>
+                  <li>Авито применяет при следующей обработке файла (до 1 часа)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">📊 Таблица метрик</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🔌 API Авито / FTP</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">✅ Обновлённые ставки в объявлениях</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 7 ══ -->
+      <div class="step-card" id="step-7">
+        <div class="step-header" onclick="Panel3.toggleStep(7)">
+          <div class="step-num-wrap"><span class="step-num">07</span></div>
+          <div class="step-emoji">🚀</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 7 · Рост</div>
+            <div class="step-title-row">
+              <span class="step-title">Масштабирование</span>
+            </div>
+            <div class="step-short">Победившую гипотезу применяем ко всем похожим SKU</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,7)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              Когда нашли формулу, которая работает — нет смысла ограничиваться одним товаром. Если текст «Свежий хлеб за 3 часа» отлично конвертирует — значит, похожий подход (скорость + конкретная польза) скорее всего сработает и для пирогов, булочек, других позиций из той же категории.
+              <br><br>
+              Берём победивший шаблон и применяем его ко всем SKU, где эта гипотеза ещё не тестировалась. Скрипт создаёт новые объявления с тем же структурным подходом, но уникальными полями и адаптированным текстом для каждой позиции.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Пример масштабирования</div>
+            <div class="example-block">
+              <strong>Победила гипотеза:</strong> акцент на скорость и натуральность для «Хлеба ржаного 400г»<br><br>
+              <strong>Применяем к:</strong><br>
+              • «Булочки с корицей 300г» → «Булочки с корицей — свежие за 2 часа, без красителей»<br>
+              • «Пирог с яблоком 500г» → «Пирог с яблоком — домашний рецепт, готов к вечеру»<br>
+              • «Хлеб пшеничный 400г» → «Пшеничный хлеб без дрожжей — выпекаем каждый день»<br><br>
+              Все новые объявления добавляются в систему сбора статистики.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">🏆 Лучшая гипотеза</span>
+                <span class="df-arrow">+</span>
+                <span class="df-item input">📄 Остаток SKU из catalog.csv</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🤖 Claude API + Python</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">📈 Новые объявления → больше заявок</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="step-connector"><div class="step-connector-line"></div></div>
+
+      <!-- ══ STEP 8 ══ -->
+      <div class="step-card" id="step-8">
+        <div class="step-header" onclick="Panel3.toggleStep(8)">
+          <div class="step-num-wrap"><span class="step-num">08</span></div>
+          <div class="step-emoji">📝</div>
+          <div class="step-head-body">
+            <div class="step-label">Этап 8 · Цикл</div>
+            <div class="step-title-row">
+              <span class="step-title">Отчётность и итерации</span>
+            </div>
+            <div class="step-short">Регулярные отчёты и постоянное улучшение показателей</div>
+          </div>
+          <div class="step-check-area">
+            <div class="step-checkbox" onclick="Panel3.toggleCheck(event,8)" title="Отметить выполненным"></div>
+            <div class="chevron">▼</div>
+          </div>
+        </div>
+        <div class="step-body">
+
+          <div class="body-section">
+            <div class="body-section-title">Суть этапа</div>
+            <div class="desc-block">
+              В конце каждой недели и месяца собирается отчёт: как менялись показатели, какие тексты и картинки сработали, сколько потрачено, сколько получено контактов, какая стоимость заявки.
+              <br><br>
+              На основе отчёта принимаются решения на следующий цикл: что отключить, что усилить, какие новые гипотезы протестировать. Процесс не заканчивается — он постоянно улучшается. Каждый цикл даёт новые данные, которые делают следующий цикл эффективнее.
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Что входит в отчёт</div>
+            <div class="tips-list">
+              <div class="tip-item"><span class="tip-icon">📈</span>Динамика по кампаниям: как менялись показы, клики, контакты по дням и неделям</div>
+              <div class="tip-item"><span class="tip-icon">🏆</span>Топ гипотез: какие тексты и картинки сработали лучше всего и почему</div>
+              <div class="tip-item"><span class="tip-icon">💸</span>Финансы: общие затраты, количество контактов, средняя цена контакта, CPA</div>
+              <div class="tip-item"><span class="tip-icon">📋</span>План на следующий период: новые гипотезы, изменения ставок, масштабирование</div>
+            </div>
+          </div>
+
+          <div class="body-section">
+            <div class="body-section-title">Поток данных</div>
+            <div class="data-flow">
+              <div class="df-row">
+                <span class="df-item input">💾 SQLite (все накопленные данные)</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item tool">🐼 pandas / Python</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">📋 Отчёт (неделя / месяц)</span>
+              </div>
+              <div class="df-row">
+                <span class="df-item output">📋 Отчёт</span>
+                <span class="df-arrow">→</span>
+                <span class="df-item output">🔁 Следующий цикл (→ Этап 2)</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+    </div><!-- /flow-list -->
+  </div>
+</section>
+
+
+<!-- ═══ DB TABLES ═══ -->
+<section>
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Данные</div>
+      <h2>Таблицы базы данных</h2>
+      <p>Структурированное хранение: статистика, аналитика, история ставок, заявки.</p>
+    </div>
+    <div class="db-grid" id="dbGrid">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TECH STACK ═══ -->
+<!--<div class="tools-section">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Технологии</div>
+      <h2>Стек</h2>
+    </div>
+    <div class="tools-grid" id="techGrid">-->
+      <!-- Injected by JS -->
+    <!--</div>
+  </div>
+</div>-->
+
+
+<!-- TOOLS SECTION -->
+<div class="tools-section">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Стек</div>
+      <h2>Инструменты</h2>
+      <p>Все инструменты — проверенные и специализированные. Ничего лишнего.</p>
+    </div>
+    <div class="tools-grid">
+      <div class="tool-card">
+        <div class="tool-icon">🤖</div>
+        <div><div class="tool-name">Claude API</div><div class="tool-use">Генерация уникальных продающих текстов на основе характеристик товара и заданных шаблонов</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🐍</div>
+        <div><div class="tool-name">Python</div><div class="tool-use">Основа всей автоматизации: публикация, сбор статистики, анализ, управление ставками</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🔌</div>
+        <div><div class="tool-name">API Авито</div><div class="tool-use">Прямое подключение к Авито: публикация услуг, управление ставками, получение статистики</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📄</div>
+        <div><div class="tool-name">XML + FTP</div><div class="tool-use">Стандартный способ загрузки товарных объявлений. Файл обновляется автоматически раз в час</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🖼️</div>
+        <div><div class="tool-name">Pillow (PIL)</div><div class="tool-use">Автоматическая генерация картинок для объявлений: шаблон + цена + характеристика</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🎲</div>
+        <div><div class="tool-name">Уникальные поля</div><div class="tool-use">Python-скрипт генерирует уникальные артикул, вес, высоту для каждого объявления — защита от блокировок</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">📦</div>
+        <div><div class="tool-name">pricecraft</div><div class="tool-use">Разворачивает конфигурируемые товары в плоский список SKU — каждая комбинация как отдельная строка</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">💾</div>
+        <div><div class="tool-name">SQLite / CSV</div><div class="tool-use">Локальная база данных: хранит статистику по дням, все гипотезы, avito_ad_id и их связи</div></div>
+      </div>
+      <div class="tool-card">
+        <div class="tool-icon">🐼</div>
+        <div><div class="tool-name">pandas</div><div class="tool-use">Анализ данных: агрегация статистики, расчёт CTR, CPL, CPA, сравнение гипотез</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══ RESULTS ═══ -->
+<!--<section>
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Результат</div>
+      <h2>Что получает клиент</h2>
+    </div>
+    <div class="results-grid" id="resultsGrid">-->
+      <!-- Injected by JS -->
+    <!--</div>
+  </div>
+</section>-->
+
+
+
+<!-- RESULTS -->
+<div class="results-section">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Для заказчика</div>
+      <h2>Что вы получаете</h2>
+      <p>Конкретные результаты, за которые стоит платить.</p>
+    </div>
+    <div class="results-grid">
+      <div class="result-card">
+        <div class="result-icon">📈</div>
+        <div class="result-title">Рост заявок без роста бюджета</div>
+        <div class="result-desc">Бюджет перераспределяется в пользу работающих гипотез — больше контактов за те же деньги.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">💰</div>
+        <div class="result-title">Снижение цены контакта</div>
+        <div class="result-desc">Постоянная оптимизация ставок и отключение слабых объявлений снижают стоимость каждой заявки.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🔄</div>
+        <div class="result-title">Работа без простоев</div>
+        <div class="result-desc">Уникальные поля и автоматическое пересоздание заблокированных объявлений — объявления работают постоянно.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">📋</div>
+        <div class="result-title">Прозрачная отчётность</div>
+        <div class="result-desc">Еженедельные и ежемесячные отчёты: затраты, количество контактов, лучшие тексты и картинки.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🚀</div>
+        <div class="result-title">Масштабируемость</div>
+        <div class="result-desc">Успешные гипотезы распространяются на все SKU — охват растёт без дополнительных затрат на тесты.</div>
+      </div>
+      <div class="result-card">
+        <div class="result-icon">🛠️</div>
+        <div class="result-title">Полный цикл под ключ</div>
+        <div class="result-desc">От прайс-листа до первых заявок — весь процесс ведётся специалистом, вам не нужно разбираться в технике.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Вопросы и ответы</div>
+      <h2>Часто спрашивают</h2>
+      <p>Ответы на типичные вопросы — удобно для отдела продаж при работе с клиентами.</p>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Сколько времени занимает запуск? <span class="fchev">▼</span></div>
+        <div class="faq-a">От получения прайс-листа до первых опубликованных объявлений — обычно 2–3 рабочих дня. Это включает подготовку данных, генерацию текстов и картинок, тестовую публикацию. Первая статистика появится через 3–7 дней после публикации.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Что такое «гипотеза» и зачем их несколько? <span class="fchev">▼</span></div>
+        <div class="faq-a">Гипотеза — это один вариант подачи объявления: определённый заголовок, описание, картинка. Заранее неизвестно, что лучше сработает на вашу аудиторию. Поэтому делаем 2–4 варианта, публикуем, смотрим на статистику и оставляем лучший. Это называется A/B-тестирование.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Почему объявления иногда блокирует Авито? <span class="fchev">▼</span></div>
+        <div class="faq-a">Авито автоматически проверяет объявления на дубли и нарушения. Иногда алгоритм срабатывает ошибочно — даже у честных объявлений. Именно поэтому у каждого объявления генерируются уникальные поля (артикул, вес, размер) — это снижает вероятность блокировки. А если блокировка всё же случилась — система автоматически создаёт новое объявление.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Нужен ли у клиента аккаунт на Авито? <span class="fchev">▼</span></div>
+        <div class="faq-a">Да, нужен аккаунт Авито с подключённым тарифом, который разрешает работу через API или XML-выгрузку. Обычно это тарифы для бизнеса. Помогаем с настройкой и подключением.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Как считается цена контакта? <span class="fchev">▼</span></div>
+        <div class="faq-a">Цена контакта (CPL) = все затраты на объявление за период ÷ количество контактов (звонки + сообщения) за тот же период. Например: потратили 2 000₽, получили 20 контактов — цена контакта 100₽. Наша задача её снижать.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Это ручная работа или автоматическая? <span class="fchev">▼</span></div>
+        <div class="faq-a">Сейчас процесс полуавтоматический: ключевые операции (сбор статистики, генерация текстов, публикация) автоматизированы через скрипты, но специалист контролирует результаты, принимает решения по оптимизации и формирует отчёты. Постепенно всё больше операций переходит в полностью автоматический режим.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q" onclick="toggleFaq(this)">Что значит «масштабирование»? <span class="fchev">▼</span></div>
+        <div class="faq-a">Когда мы нашли работающий подход (гипотезу с хорошим CTR и низкой ценой контакта), мы не ограничиваемся одним товаром. Берём тот же успешный шаблон и применяем его ко всем похожим позициям в каталоге. Это позволяет быстро увеличить количество заявок без долгого тестирования с нуля.</div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+    // ── FAQ ──
+  function toggleFaq(el) {
+    const item = el.closest('.faq-item');
+    item.classList.toggle('open');
+  }
+</script>
+
+<!-- ═══ AUTH ZONE ═══ -->
+<div class="auth-zone" id="authZone">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Для специалистов</div>
+      <h2>Панель управления</h2>
+      <p>Трекер этапов, статистика по клиентам, заметки для отдела продаж.</p>
+    </div>
+
+    <div class="login-box" id="loginBox">
+      <h3>Вход в панель</h3>
+      <div class="login-error" id="loginError">Неверный пароль</div>
+      <div class="login-lockout" id="loginLockout">Слишком много попыток. Подождите <span id="lockTimer">10:00</span></div>
+      <input type="password" id="loginPassword" placeholder="Введите пароль" onkeydown="if(event.key==='Enter')Panel3.login()">
+      <button onclick="Panel3.login()">Войти</button>
+    </div>
+
+    <div class="auth-content" id="authContent">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+        <span style="font-size: 12px; color: #5a5856; text-transform: uppercase; letter-spacing: .1em; font-weight: 700;">Клиенты</span>
+        <button onclick="Panel3.logout()" style="background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); border-radius: 8px; padding: 6px 14px; color: #8a8280; font-size: 12px; cursor: pointer; font-family: 'Golos Text', sans-serif; font-weight: 600;">Выйти</button>
+      </div>
+      <div class="clients-list" id="clientsList">
+        <!-- Injected by JS -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ BOTTOM CONTACT (extended) ═══ -->
+<div class="bottom-contact" id="contact-bottom">
+  <div class="container">
+    <div class="sec-header">
+      <div class="sec-eyebrow">Готовы начать?</div>
+      <h2>Расскажите о проекте</h2>
+      <p>Чем подробнее — тем точнее мы оценим задачу и предложим решение.</p>
+    </div>
+
+    <div class="contact-section">
+      <h3>Контактные данные</h3>
+      <p class="sub">Выберите удобный способ связи.</p>
+
+      <div class="form-toggle">
+        <button class="toggle-btn active" onclick="Panel3.switchForm('phone', this, 'bottom')">📞 Телефон</button>
+        <button class="toggle-btn" onclick="Panel3.switchForm('messenger', this, 'bottom')">💬 Мессенджер</button>
+      </div>
+
+      <div id="phonePanel-bottom" class="phone-panel">
+        <div class="form-fields">
+          <div class="form-row">
+            <div class="field"><label>Имя</label><input type="text" placeholder="Как вас зовут?"></div>
+            <div class="field"><label>Телефон</label><input type="tel" placeholder="+7 (___) ___-__-__"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="messengerPanel-bottom" class="messenger-panel">
+        <div class="messenger-grid">
+          <button class="msg-btn" onclick="Panel3.selectMessenger(this, 'bottom')">💚 WhatsApp</button>
+          <button class="msg-btn" onclick="Panel3.selectMessenger(this, 'bottom')">✈️ Telegram</button>
+          <button class="msg-btn" onclick="Panel3.selectMessenger(this, 'bottom')">💙 ВКонтакте</button>
+        </div>
+        <div class="form-fields">
+          <div class="form-row">
+            <div class="field"><label>Имя</label><input type="text" placeholder="Как вас зовут?"></div>
+            <div class="field"><label>Ник или номер</label><input type="text" placeholder="@username или +7..."></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="extended-fields">
+        <div class="ext-field">
+          <label>📋 Прайс-лист</label>
+          <div class="hint">В каком виде и насколько структурирован?</div>
+          <select>
+            <option value="">Выберите...</option>
+            <option>Есть готовый Excel / Google Sheets</option>
+            <option>Есть, но нужна обработка</option>
+            <option>Нет структурированного прайса</option>
+          </select>
+        </div>
+        <div class="ext-field">
+          <label>📷 Фотографии товаров</label>
+          <div class="hint">Где лежат? Нужно ли собирать или сортировать?</div>
+          <select>
+            <option value="">Выберите...</option>
+            <option>Есть готовые фото, структурированы</option>
+            <option>Есть, но разбросаны / нужна сортировка</option>
+            <option>Фото нет, нужно создавать</option>
+          </select>
+        </div>
+        <div class="ext-field">
+          <label>🎨 Дизайн карточки</label>
+          <select>
+            <option value="">Выберите...</option>
+            <option>Есть готовый макет</option>
+            <option>Нужно создавать с нуля</option>
+            <option>Не уверен, нужна консультация</option>
+          </select>
+        </div>
+        <div class="ext-field">
+          <label>📦 Категории и объём</label>
+          <div class="hint">Сколько категорий товаров? Есть ли с количеством более 5 000 позиций?</div>
+          <textarea placeholder="Например: 3 категории, основная — металлоконструкции, около 500 позиций"></textarea>
+        </div>
+        <div class="ext-field">
+          <label>💰 Бюджет и цели</label>
+          <div class="hint">Средний чек, желаемое число контактов или заказов в месяц.</div>
+          <textarea placeholder="Например: средний чек 15 000₽, хотим 50 заявок в месяц"></textarea>
+        </div>
+        <div class="ext-field">
+          <label>🏪 Аккаунт Авито</label>
+          <select>
+            <option value="">Выберите...</option>
+            <option>Есть оформленный магазин с API</option>
+            <option>Есть аккаунт, но без API</option>
+            <option>Нет аккаунта, нужна помощь</option>
+          </select>
+        </div>
+        <div class="ext-field">
+          <label>⏰ Сроки</label>
+          <select>
+            <option value="">Выберите...</option>
+            <option>Срочно — в ближайшие дни</option>
+            <option>В течение недели</option>
+            <option>В течение месяца</option>
+            <option>Пока просто изучаю</option>
+          </select>
+        </div>
+      </div>
+
+      <button class="form-submit" onclick="Panel3.submitForm('bottom')" style="margin-top: 16px;">Отправить заявку →</button>
+      <p class="form-note">🔒 Данные используются только для связи. Без спама и передачи третьим лицам.</p>
+      <div class="form-success" id="success-bottom">
+        <div class="check-big">✅</div>
+        <h4>Заявка принята!</h4>
+        <p>Свяжемся с вами в течение рабочего дня и обсудим все детали.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <p>Авито-продвижение под ключ · Система автоматической генерации и управления объявлениями</p>
+</footer>
+
+<script src="panel3.js"></script>
+</body>
+</html>
