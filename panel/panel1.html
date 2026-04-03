@@ -1,0 +1,845 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Панель 1 — Настройка и генерация</title>
+<link rel="stylesheet" href="panel.css">
+<style>
+/* ── PANEL 1 LOCAL STYLES ── */
+.client-platforms { display: flex; gap: 5px; flex-wrap: wrap; }
+
+.section-tabs {
+  display: flex; gap: 0; background: rgba(0,0,0,.2);
+  border-bottom: 1px solid var(--brd); padding: 0 15px;
+}
+.tab-btn {
+  padding: 9px 14px; font-family: var(--mono); font-size: 11px; font-weight: 600;
+  color: var(--muted); background: none; border: none; border-bottom: 2px solid transparent;
+  cursor: pointer; transition: all .15s; margin-bottom: -1px;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--acc); border-bottom-color: var(--acc); }
+
+.tab-content { display: none; padding: 14px 15px; }
+.tab-content.active { display: block; }
+
+.gen-controls {
+  background: rgba(0,0,0,.15); border: 1px solid var(--brd);
+  border-radius: 8px; padding: 12px 14px; margin-bottom: 12px;
+}
+.gen-controls .f-row { flex-wrap: wrap; }
+.gen-controls .f-group { min-width: 140px; }
+
+.accounts-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.account-row {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(0,0,0,.15); border: 1px solid var(--brd);
+  border-radius: 8px; padding: 8px 12px; font-size: 11px;
+}
+.account-row.selected { border-color: rgba(0,212,255,.35); background: rgba(0,212,255,.05); }
+.account-key { color: var(--acc); font-weight: 700; min-width: 60px; }
+.account-user { color: var(--muted); font-size: 10px; }
+.account-status { margin-left: auto; }
+
+.pricecraft-btns { display: flex; flex-direction: column; gap: 6px; }
+.pc-row {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px; padding: 9px 12px;
+  background: rgba(0,0,0,.15); border: 1px solid var(--brd); border-radius: 8px;
+}
+.pc-row-name { font-size: 11px; font-weight: 600; color: var(--text); }
+.pc-row-status { font-size: 10px; color: var(--muted); }
+.pc-row-btns { display: flex; gap: 5px; align-items: center; }
+
+.log-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.log-title { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .08em; }
+
+.gen-status-bar {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  background: rgba(0,0,0,.15); border: 1px solid var(--brd);
+  border-radius: 8px; padding: 8px 12px; margin-bottom: 10px;
+  font-size: 11px;
+}
+
+/* history table */
+.hist-table { width: 100%; border-collapse: collapse; font-size: 10px; }
+.hist-table th { color: var(--muted); font-weight: 600; text-align: left; padding: 4px 8px; border-bottom: 1px solid var(--brd); }
+.hist-table td { padding: 5px 8px; border-bottom: 1px solid rgba(26,37,53,.5); color: var(--text); }
+.hist-table tr:last-child td { border-bottom: none; }
+.hist-table tr:hover td { background: rgba(255,255,255,.02); }
+
+.hist-tag {
+  display: inline-block; padding: 1px 6px; border-radius: 4px; font-size: 9px; font-weight: 700;
+}
+.hist-done { background: rgba(0,232,122,.1); color: var(--grn); border: 1px solid rgba(0,232,122,.2); }
+.hist-run  { background: rgba(0,212,255,.1); color: var(--acc); border: 1px solid rgba(0,212,255,.2); }
+.hist-err  { background: rgba(255,64,96,.1);  color: var(--red); border: 1px solid rgba(255,64,96,.2); }
+.hist-pend { background: rgba(255,208,0,.1);  color: var(--yel); border: 1px solid rgba(255,208,0,.2); }
+
+/* quick stats above cards */
+.summary-bar {
+  display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+}
+.summary-pill {
+  display: flex; align-items: center; gap: 6px;
+  background: rgba(13,20,32,.88); border: 1px solid var(--brd);
+  border-radius: 8px; padding: 7px 12px; font-size: 11px;
+}
+.summary-pill .num { font-family: var(--head); font-size: 16px; font-weight: 700; color: #fff; }
+.summary-pill .lbl { font-size: 10px; color: var(--muted); }
+
+/* genimg checkbox */
+.check-row {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px; color: var(--text); cursor: pointer;
+  padding: 6px 0;
+}
+.check-row input[type="checkbox"] { accent-color: var(--acc); width: 14px; height: 14px; cursor: pointer; }
+
+.idx-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 2px 7px; border-radius: 5px; font-size: 10px;
+  background: rgba(0,0,0,.2); border: 1px solid var(--brd); color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ HEADER ════════ -->
+<div class="wrap">
+  <div class="p-hdr">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <span class="p-logo">AVITO<span>·</span>PANEL</span>
+      <span id="hdrPill" class="run-pill"><span class="dot"></span><span id="hdrTxt">работает</span></span>
+    </div>
+    <div class="p-hdr-r">
+      <span id="hdrTime"></span>
+      <span style="color:var(--brd)">|</span>
+      <a href="panel2.html">→ Панель 2</a>
+      <a href="land.html">→ Панель 3</a>
+    </div>
+  </div>
+
+  <!-- ════════ NAV ════════ -->
+  <div class="p-nav">
+    <a href="#" class="active">⚙ Настройка и генерация</a>
+    <a href="panel2.html">📊 Аналитика и ставки</a>
+    <a href="land.html">🌐 Лендинг и CRM</a>
+  </div>
+
+  <!-- ════════ TOOLBAR ════════ -->
+  <div class="toolbar" id="toolbar">
+    <button class="btn btn-acc" onclick="P1.runAll('avito')">▶ Запустить всё (Авито)</button>
+    <button class="btn btn-grn" onclick="P1.runPricecraft('all')">▶ Обновить маркетплейсы</button>
+    <div class="toolbar-sep"></div>
+    <button class="btn btn-red" onclick="P1.stopAll()" id="btnStopAll">■ СТОП</button>
+    <button class="btn btn-ghost" onclick="P1.openModal('addClient')">+ Клиент</button>
+    <div class="toolbar-info" id="toolbarInfo">нет активных процессов</div>
+  </div>
+
+  <!-- ════════ SUMMARY ════════ -->
+  <div class="summary-bar" id="summaryBar">
+    <div class="summary-pill"><span class="num" id="sumClients">4</span><span class="lbl">клиентов</span></div>
+    <div class="summary-pill"><span class="num" id="sumActive">3</span><span class="lbl">активных</span></div>
+    <div class="summary-pill"><span class="num" id="sumTotal">8640</span><span class="lbl">объявлений</span></div>
+    <div class="summary-pill"><span class="num" id="sumRunning" style="color:var(--acc)">0</span><span class="lbl">генерируется</span></div>
+  </div>
+
+  <!-- ════════ CLIENTS GRID ════════ -->
+  <div class="grid-clients" id="clientsGrid">
+    <!-- injected by JS -->
+  </div>
+
+</div>
+
+<!-- ════════ GEN MODAL ════════ -->
+<div class="modal-overlay" id="modalGen">
+  <div class="modal">
+    <div class="modal-title">
+      <button class="modal-close" onclick="P1.closeModal('Gen')">✕</button>
+      ▶ Запуск генерации — <span id="modalGenClient">svai_evg</span>
+    </div>
+
+    <div class="gen-controls">
+      <div class="sec-title">Аккаунт</div>
+      <div class="f-group">
+        <label class="f-label">Аккаунт (name_csv)</label>
+        <select class="f-select" id="genAccount"></select>
+      </div>
+
+      <hr class="divider">
+      <div class="sec-title">Прайс</div>
+      <div class="f-group">
+        <label class="f-label">URL Google Sheets или путь к файлу</label>
+        <input class="f-input" id="genFilePrice" placeholder="https://docs.google.com/spreadsheets/d/...">
+      </div>
+
+      <hr class="divider">
+      <div class="sec-title">Параметры</div>
+      <div class="f-row">
+        <div class="f-group">
+          <label class="f-label">Кол-во объявлений</label>
+          <input class="f-input" id="genNumAds" type="number" value="500" min="1">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Дата начала</label>
+          <input class="f-input" id="genDateF" type="date">
+        </div>
+        <div class="f-group">
+          <label class="f-label">Стартовый индекс</label>
+          <input class="f-input" id="genStartIdx" type="number" value="0" min="0">
+        </div>
+      </div>
+
+      <hr class="divider">
+      <label class="check-row">
+        <input type="checkbox" id="genImg"> Генерировать новые картинки (genimg.flag)
+      </label>
+    </div>
+
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-orn" style="flex:1;padding:12px;font-size:12px;" onclick="P1.submitGen()">▶ Запустить генерацию</button>
+      <button class="btn btn-red" onclick="P1.closeModal('Gen')">Отмена</button>
+    </div>
+
+    <div id="modalGenLog" style="display:none;margin-top:12px;">
+      <div class="log-header">
+        <span class="log-title">Лог</span>
+        <span class="tag run" id="modalGenStatus">запускается...</span>
+      </div>
+      <div class="log-box sm" id="modalGenLogBox">Ожидание запуска...</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════ ADD CLIENT MODAL ════════ -->
+<div class="modal-overlay" id="modalAddClient">
+  <div class="modal">
+    <div class="modal-title">
+      <button class="modal-close" onclick="P1.closeModal('AddClient')">✕</button>
+      + Добавить клиента
+    </div>
+    <div class="f-group">
+      <label class="f-label">Ключ клиента (client_key, name)</label>
+      <input class="f-input" id="newClientKey" placeholder="svai">
+      <div class="f-hint">Имя папки в proj/ на сервере. Латиница, нижнее подчёркивание.</div>
+    </div>
+    <div class="f-group">
+      <label class="f-label">Название</label>
+      <input class="f-input" id="newClientName" placeholder="ООО «СвайМонтаж»">
+    </div>
+    <div class="f-group">
+      <label class="f-label">Категория</label>
+      <input class="f-input" id="newClientCat" placeholder="Винтовые сваи">
+    </div>
+    <div class="sec-title">Площадки</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;">
+      <label class="check-row"><input type="checkbox" id="platAvito" checked> Авито</label>
+      <label class="check-row"><input type="checkbox" id="platOzon"> Ozon</label>
+      <label class="check-row"><input type="checkbox" id="platWb"> Wildberries</label>
+    </div>
+    <button class="btn btn-grn" style="width:100%;padding:12px;" onclick="P1.addClient()">Добавить клиента</button>
+  </div>
+</div>
+
+<!-- ════════ LOG MODAL ════════ -->
+<div class="modal-overlay" id="modalLog">
+  <div class="modal" style="width:700px;">
+    <div class="modal-title">
+      <button class="modal-close" onclick="P1.closeModal('Log')">✕</button>
+      Лог — <span id="modalLogTitle"></span>
+    </div>
+    <div class="log-box" id="modalLogBox" style="max-height:500px;"></div>
+    <div style="display:flex;justify-content:flex-end;margin-top:10px;gap:6px;">
+      <button class="btn btn-ghost btn-sm" onclick="P1.clearLog()">Очистить</button>
+      <button class="btn btn-ghost btn-sm" onclick="P1.closeModal('Log')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════
+   panel1.js — встроенный JS
+═══════════════════════════════════════════ */
+const P1 = (() => {
+
+  /* ── CONFIG ── */
+  const GEN_RUN_URL   = '/generator/web/run.php';
+  const GEN_STOP_URL  = '/generator/web/stop.php';
+  const GEN_LOG_URL   = '/generator/web/log.php';
+  const GEN_STATUS_URL= '/generator/web/status.php';
+  const GEN_GENIMG_URL= '/generator/web/genimg_flag.php';
+  const PC_ACTION_URL = '/pricecraft/web/action.php';
+  const PC_STATUS_URL = '/pricecraft/web/status.php';
+  const PC_LOG_URL    = '/pricecraft/web/log.php';
+  const PC_BTN_STATUS = '/pricecraft/web/get_buttons_status.php';
+  const GEN_KEY = 'super123Lisa';
+  const PC_PASS = 'genMnogunik3472';
+
+  /* ── MOCK CLIENTS DATA ──
+     В production читается из clients.json / SQLite через PHP endpoint
+     Структура: client_key → { name, category, platforms: ['avito','ozon','wb'],
+                                accounts: [{name_csv, user_id}],
+                                sheet_id?, pricecraft_enabled?,
+                                priority, stats }
+  */
+  const CLIENTS = [
+    {
+      key: 'svai',
+      name: 'ООО «СвайМонтаж»',
+      category: 'Винтовые сваи',
+      priority: 'bad',
+      platforms: ['avito'],
+      accounts: [
+        { name_csv: 'evg', user_id: '123456789', img_folder: '/proj/svai/var/img' },
+        { name_csv: 'alx', user_id: '987654321', img_folder: '/proj/svai/var/img' },
+      ],
+      active: true,
+      stats: { ads: 1240, spend7d: 45600, contacts7d: 95 }
+    },
+    {
+      key: 'zabor',
+      name: 'ИП Сергеев А.В.',
+      category: 'Заборы и ограждения',
+      priority: 'ok',
+      platforms: ['avito'],
+      accounts: [
+        { name_csv: 'srg', user_id: '555111222', img_folder: '/proj/zabor/var/img' },
+      ],
+      active: true,
+      stats: { ads: 860, spend7d: 22400, contacts7d: 80 }
+    },
+    {
+      key: 'sborpk',
+      name: 'ULTRAFPS',
+      category: 'Сборка ПК',
+      priority: 'good',
+      platforms: ['avito','ozon','wb'],
+      accounts: [
+        { name_csv: 'pk1', user_id: '777888999', img_folder: '/proj/sborpk/var/img' },
+      ],
+      active: true,
+      pricecraft_enabled: true,
+      stats: { ads: 4200, spend7d: 18900, contacts7d: 158 }
+    },
+    {
+      key: 'dezi',
+      name: 'ООО «ЧистоДом»',
+      category: 'Дезинфекция',
+      priority: 'ok',
+      platforms: ['avito'],
+      accounts: [
+        { name_csv: 'pch', user_id: '333444555', img_folder: '/proj/dezi/var/img' },
+      ],
+      active: false,
+      stats: { ads: 320, spend7d: 8500, contacts7d: 25 }
+    }
+  ];
+
+  /* ── PRICECRAFT BUTTONS ── */
+  const PC_BTNS = [
+    { id: 'create_configurations', label: 'Создать конфигурации', cls: 'btn-acc' },
+    { id: 'generate_ozon_file',    label: 'Прайс Ozon',           cls: 'btn-acc' },
+    { id: 'generate_ozon_content', label: 'Контент Ozon',         cls: 'btn-orn' },
+    { id: 'update_ozon_prices',    label: 'Цены Ozon',            cls: 'btn-acc' },
+    { id: 'actualize_ozon',        label: '↻ Актуализировать Ozon', cls: 'btn-yel' },
+    { id: 'generate_wb_file',      label: 'Прайс WB',             cls: 'btn-acc' },
+    { id: 'generate_wb_content',   label: 'Контент WB',           cls: 'btn-orn' },
+    { id: 'update_wb_prices',      label: 'Цены WB',              cls: 'btn-acc' },
+  ];
+
+  /* ── STATE ── */
+  let genPollers = {};
+  let pcPollers  = {};
+  let activeGenClient = null;
+  let logModal_client = null;
+
+  /* ── INIT ── */
+  function init() {
+    renderClients();
+    updateClock();
+    setInterval(updateClock, 1000);
+    setInterval(pollAll, 3000);
+    setDate();
+    updateSummary();
+  }
+
+  function setDate() {
+    const d = new Date();
+    const fmt = d.toISOString().split('T')[0];
+    const el = document.getElementById('genDateF');
+    if (el) el.value = fmt;
+  }
+
+  function updateClock() {
+    const el = document.getElementById('hdrTime');
+    if (el) el.textContent = new Date().toLocaleString('ru', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  }
+
+  function updateSummary() {
+    const active = CLIENTS.filter(c => c.active).length;
+    const total  = CLIENTS.reduce((s,c) => s + (c.stats?.ads || 0), 0);
+    const el = (id,v) => { const e=document.getElementById(id); if(e) e.textContent=v; };
+    el('sumClients', CLIENTS.length);
+    el('sumActive', active);
+    el('sumTotal', total.toLocaleString('ru'));
+  }
+
+  /* ── RENDER CLIENTS ── */
+  function renderClients() {
+    const grid = document.getElementById('clientsGrid');
+    grid.innerHTML = CLIENTS.map(c => renderClientCard(c)).join('');
+  }
+
+  function renderClientCard(c) {
+    const priorityDot = { bad:'prio-bad', ok:'prio-ok', good:'prio-good' }[c.priority] || 'prio-ok';
+    const statusOpacity = c.active ? '' : 'opacity:.5;';
+
+    const platforms = c.platforms.map(p => {
+      const cls = { avito:'plat-avito', ozon:'plat-ozon', wb:'plat-wb' }[p] || '';
+      const label = { avito:'Авито', ozon:'Ozon', wb:'WB' }[p] || p;
+      return `<span class="plat-badge ${cls}">${label}</span>`;
+    }).join('');
+
+    const accounts = c.accounts.map(a => `
+      <div class="account-row" id="acc-${c.key}-${a.name_csv}">
+        <span class="account-key">${a.name_csv}</span>
+        <span class="account-user">user: ${a.user_id}</span>
+        <span class="account-status" id="accSt-${c.key}-${a.name_csv}">
+          <span class="di"></span>
+        </span>
+      </div>
+    `).join('');
+
+    const hasPricecraft = c.pricecraft_enabled && c.platforms.some(p => p !== 'avito');
+    const tabs = `
+      <div class="section-tabs">
+        <button class="tab-btn active" onclick="P1.switchTab('${c.key}', 'avito', this)">Авито</button>
+        ${hasPricecraft ? `<button class="tab-btn" onclick="P1.switchTab('${c.key}', 'markets', this)">Маркетплейсы</button>` : ''}
+        <button class="tab-btn" onclick="P1.switchTab('${c.key}', 'history', this)">История</button>
+      </div>
+    `;
+
+    // ── TAB AVITO ──
+    const tabAvito = `
+      <div class="tab-content active" id="tab-${c.key}-avito">
+        <div class="sec-title">Аккаунты</div>
+        <div class="accounts-list">${accounts}</div>
+
+        <div class="gen-status-bar" id="genBar-${c.key}" style="display:none;">
+          <span class="dr"></span>
+          <span id="genBarTxt-${c.key}">Генерация запущена...</span>
+          <span class="p-bar" style="flex:1;"><span class="p-bar-fill" id="genBarFill-${c.key}" style="width:0%"></span></span>
+          <span id="genBarPct-${c.key}" style="font-size:10px;color:var(--muted);">0%</span>
+        </div>
+
+        <div class="op-row">
+          <button class="btn btn-orn btn-full" onclick="P1.openGenModal('${c.key}')">▶ Запустить генерацию</button>
+        </div>
+        <div class="op-row">
+          <button class="btn btn-red btn-full" id="btnStop-${c.key}" onclick="P1.stopGen('${c.key}')" style="display:none;">■ Остановить</button>
+        </div>
+
+        <div class="log-header" style="margin-top:10px;">
+          <span class="log-title">Лог генерации</span>
+          <div style="display:flex;gap:5px;">
+            <span class="tag" id="genTag-${c.key}"><span class="di"></span> idle</span>
+            <button class="btn btn-ghost btn-sm" onclick="P1.openLogModal('${c.key}')">развернуть</button>
+          </div>
+        </div>
+        <div class="log-box sm" id="genLog-${c.key}">Лог пуст...</div>
+      </div>
+    `;
+
+    // ── TAB MARKETS ──
+    const tabMarkets = hasPricecraft ? `
+      <div class="tab-content" id="tab-${c.key}-markets">
+        <div class="pricecraft-btns" id="pc-btns-${c.key}">
+          ${renderPcBtns(c.key)}
+        </div>
+        <div class="log-header" style="margin-top:12px;">
+          <span class="log-title">Лог pricecraft</span>
+          <span class="tag" id="pcTag-${c.key}"><span class="di"></span> idle</span>
+        </div>
+        <div class="log-box sm" id="pcLog-${c.key}">Лог пуст...</div>
+      </div>
+    ` : '';
+
+    // ── TAB HISTORY ──
+    const tabHistory = `
+      <div class="tab-content" id="tab-${c.key}-history">
+        <div class="sec-title">Последние запуски</div>
+        <table class="hist-table">
+          <thead><tr><th>Дата</th><th>Аккаунт</th><th>Кол-во</th><th>Статус</th><th>Файл</th></tr></thead>
+          <tbody id="hist-${c.key}">
+            <tr><td colspan="5" style="color:var(--muted);text-align:center;padding:12px;">Нет данных</td></tr>
+          </tbody>
+        </table>
+      </div>
+    `;
+
+    return `
+      <div class="card" id="card-${c.key}" style="${statusOpacity}">
+        <div class="card-hdr">
+          <div class="card-hdr-left">
+            <span class="prio-dot ${priorityDot}"></span>
+            <div>
+              <div class="card-title">
+                ${c.name}
+                <span class="badge" id="badge-${c.key}"><span class="dot"></span><span id="badge-txt-${c.key}">gen</span></span>
+              </div>
+              <div class="card-sub">${c.key} · ${c.category}</div>
+            </div>
+          </div>
+          <div class="card-hdr-right">
+            <div class="client-platforms">${platforms}</div>
+            ${!c.active ? '<span class="tag">pausе</span>' : ''}
+          </div>
+        </div>
+
+        ${tabs}
+        ${tabAvito}
+        ${tabMarkets}
+        ${tabHistory}
+
+        <div class="card-foot">
+          <div><div class="stat-label">Объявл.</div><div class="stat-val">${(c.stats?.ads||0).toLocaleString('ru')}</div></div>
+          <div><div class="stat-label">Расход/7д</div><div class="stat-val y">${((c.stats?.spend7d||0)/1000).toFixed(1)}к₽</div></div>
+          <div><div class="stat-label">Контакты</div><div class="stat-val g">${c.stats?.contacts7d||0}</div></div>
+          <div><div class="stat-label">Статус</div><div class="stat-val" id="cSt-${c.key}">${c.active?'<span style="color:var(--grn)">●</span> active':'<span style="color:var(--muted)">● pause</span>'}</div></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderPcBtns(clientKey) {
+    return PC_BTNS.map(b => `
+      <div class="pc-row" id="pcRow-${clientKey}-${b.id}">
+        <div>
+          <div class="pc-row-name">${b.label}</div>
+          <div class="pc-row-status btn-st" id="pcSt-${clientKey}-${b.id}">—</div>
+        </div>
+        <div class="pc-row-btns">
+          <button class="btn ${b.cls} btn-sm" onclick="P1.runPcAction('${clientKey}','${b.id}')">▶</button>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  /* ── TABS ── */
+  function switchTab(clientKey, tabId, btn) {
+    const card = document.getElementById('card-' + clientKey);
+    card.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    card.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    const tab = document.getElementById(`tab-${clientKey}-${tabId}`);
+    if (tab) tab.classList.add('active');
+  }
+
+  /* ── GEN MODAL ── */
+  function openGenModal(clientKey) {
+    activeGenClient = clientKey;
+    const client = CLIENTS.find(c => c.key === clientKey);
+    if (!client) return;
+
+    document.getElementById('modalGenClient').textContent = client.name;
+
+    const sel = document.getElementById('genAccount');
+    sel.innerHTML = client.accounts.map(a =>
+      `<option value="${a.name_csv}">${a.name_csv} (user: ${a.user_id})</option>`
+    ).join('');
+
+    document.getElementById('modalGenLog').style.display = 'none';
+    document.getElementById('modalGen').classList.add('show');
+  }
+
+  function closeModal(name) {
+    document.getElementById('modal' + name).classList.remove('show');
+  }
+
+  function openModal(name) {
+    document.getElementById('modal' + name).classList.add('show');
+  }
+
+  /* ── SUBMIT GEN ── */
+  async function submitGen() {
+    if (!activeGenClient) return;
+    const account   = document.getElementById('genAccount').value;
+    const filePrice = document.getElementById('genFilePrice').value.trim();
+    const numAds    = document.getElementById('genNumAds').value;
+    const dateF     = document.getElementById('genDateF').value;
+    const startIdx  = document.getElementById('genStartIdx').value || '0';
+    const genImg    = document.getElementById('genImg').checked;
+
+    // 1. Устанавливаем genimg.flag
+    try {
+      await fetch(`${GEN_GENIMG_URL}?set=${genImg?'1':'0'}`);
+    } catch(e) {}
+
+    // 2. Запись в cl_rows происходит на сервере (в реальности — через PHP endpoint)
+    // Здесь мы напрямую запускаем mnogunik через run.php
+    const fd = new FormData();
+    fd.append('startIndex', startIdx);
+
+    document.getElementById('modalGenLog').style.display = 'block';
+    document.getElementById('modalGenStatus').className = 'tag run';
+    document.getElementById('modalGenStatus').innerHTML = '<span class="dr"></span> запускается...';
+    document.getElementById('modalGenLogBox').textContent = 'Запуск...';
+
+    try {
+      const r = await fetch(`${GEN_RUN_URL}?key=${encodeURIComponent(GEN_KEY)}`, { method:'POST', body: fd });
+      const txt = await r.text();
+      document.getElementById('modalGenLogBox').textContent = txt;
+
+      // показываем баннер на карточке
+      const bar = document.getElementById('genBar-' + activeGenClient);
+      if (bar) { bar.style.display = 'flex'; }
+      const stopBtn = document.getElementById('btnStop-' + activeGenClient);
+      if (stopBtn) stopBtn.style.display = '';
+
+      const badge = document.getElementById('badge-' + activeGenClient);
+      if (badge) { badge.classList.add('on'); document.getElementById('badge-txt-' + activeGenClient).textContent = 'gen'; }
+
+      // start polling
+      startGenPoll(activeGenClient);
+      updateToolbarInfo();
+
+    } catch(e) {
+      document.getElementById('modalGenLogBox').textContent = 'Ошибка: ' + e;
+    }
+  }
+
+  /* ── STOP GEN ── */
+  async function stopGen(clientKey) {
+    try {
+      await fetch(`${GEN_STOP_URL}?key=${encodeURIComponent(GEN_KEY)}`);
+    } catch(e) {}
+    onGenStopped(clientKey);
+  }
+
+  function onGenStopped(clientKey) {
+    const bar = document.getElementById('genBar-' + clientKey);
+    if (bar) bar.style.display = 'none';
+    const stopBtn = document.getElementById('btnStop-' + clientKey);
+    if (stopBtn) stopBtn.style.display = 'none';
+    const badge = document.getElementById('badge-' + clientKey);
+    if (badge) badge.classList.remove('on');
+    if (genPollers[clientKey]) { clearInterval(genPollers[clientKey]); delete genPollers[clientKey]; }
+    updateToolbarInfo();
+  }
+
+  /* ── GEN POLLING ── */
+  function startGenPoll(clientKey) {
+    if (genPollers[clientKey]) clearInterval(genPollers[clientKey]);
+    genPollers[clientKey] = setInterval(() => pollGen(clientKey), 2000);
+    pollGenLog(clientKey);
+  }
+
+  async function pollGen(clientKey) {
+    try {
+      const r = await fetch(`${GEN_STATUS_URL}?key=${encodeURIComponent(GEN_KEY)}&ts=${Date.now()}`, {cache:'no-store'});
+      if (!r.ok) return;
+      const j = await r.json();
+      const running = j.count > 0;
+      setGenTag(clientKey, running ? 'run' : (j.error ? 'err' : 'idle'));
+      if (!running && genPollers[clientKey]) {
+        onGenStopped(clientKey);
+        addToHistory(clientKey, 'done');
+      }
+    } catch(e) {}
+    pollGenLog(clientKey);
+  }
+
+  async function pollGenLog(clientKey) {
+    try {
+      const r = await fetch(`${GEN_LOG_URL}?ts=${Date.now()}`, {cache:'no-store'});
+      const txt = await r.text();
+      const el = document.getElementById('genLog-' + clientKey);
+      if (el) { el.textContent = txt; el.scrollTop = el.scrollHeight; }
+      // sync modal log if open
+      const ml = document.getElementById('modalGenLogBox');
+      if (ml && activeGenClient === clientKey) { ml.textContent = txt; ml.scrollTop = ml.scrollHeight; }
+    } catch(e) {}
+  }
+
+  function setGenTag(clientKey, state) {
+    const el = document.getElementById('genTag-' + clientKey);
+    if (!el) return;
+    const map = { run: 'tag run', idle: 'tag', err: 'tag err', done: 'tag ok' };
+    el.className = map[state] || 'tag';
+    const dots = { run: '<span class="dr"></span>', idle: '<span class="di"></span>', err: '<span class="de"></span>', done: '<span class="dd"></span>' };
+    const labels = { run: 'gen', idle: 'idle', err: 'error', done: 'done' };
+    el.innerHTML = (dots[state]||'') + ' ' + (labels[state]||state);
+  }
+
+  /* ── LOG MODAL ── */
+  function openLogModal(clientKey) {
+    logModal_client = clientKey;
+    const client = CLIENTS.find(c => c.key === clientKey);
+    document.getElementById('modalLogTitle').textContent = client?.name || clientKey;
+    pollLogModal();
+    document.getElementById('modalLog').classList.add('show');
+  }
+
+  async function pollLogModal() {
+    if (!logModal_client) return;
+    try {
+      const r = await fetch(`${GEN_LOG_URL}?ts=${Date.now()}`, {cache:'no-store'});
+      const txt = await r.text();
+      const el = document.getElementById('modalLogBox');
+      if (el) { el.textContent = txt; el.scrollTop = el.scrollHeight; }
+    } catch(e) {}
+  }
+
+  async function clearLog() {
+    try { await fetch(`${GEN_LOG_URL}?clear=1&key=${encodeURIComponent(GEN_KEY)}`); } catch(e) {}
+  }
+
+  /* ── PRICECRAFT ── */
+  async function runPcAction(clientKey, action) {
+    const fd = new FormData();
+    fd.append('action', action);
+    fd.append('password', PC_PASS);
+
+    try {
+      await fetch(PC_ACTION_URL, { method:'POST', body: fd });
+    } catch(e) {}
+
+    const stEl = document.getElementById(`pcSt-${clientKey}-${action}`);
+    if (stEl) stEl.innerHTML = '<span class="dw"></span> генерируется...';
+
+    startPcPoll(clientKey, action);
+  }
+
+  function startPcPoll(clientKey, action) {
+    const key = `${clientKey}:${action}`;
+    if (pcPollers[key]) clearInterval(pcPollers[key]);
+    pcPollers[key] = setInterval(() => pollPcStatus(clientKey, action), 3000);
+  }
+
+  async function pollPcStatus(clientKey, action) {
+    try {
+      const r = await fetch(`${PC_BTN_STATUS}?t=${Date.now()}`, {cache:'no-store'});
+      const data = await r.json();
+      if (data[action]) {
+        const st = data[action];
+        const stEl = document.getElementById(`pcSt-${clientKey}-${action}`);
+        if (stEl) {
+          if (st.status === 'generating') {
+            stEl.innerHTML = '<span class="dr"></span> генерируется...';
+          } else if (st.status === 'done') {
+            stEl.innerHTML = `<span class="dd"></span> ✅ ${st.generated_at || ''}`;
+            const key = `${clientKey}:${action}`;
+            if (pcPollers[key]) { clearInterval(pcPollers[key]); delete pcPollers[key]; }
+          }
+        }
+      }
+    } catch(e) {}
+    pollPcLog(clientKey);
+  }
+
+  async function pollPcLog(clientKey) {
+    try {
+      const r = await fetch(`${PC_LOG_URL}?ts=${Date.now()}`, {cache:'no-store'});
+      const txt = await r.text();
+      const el = document.getElementById('pcLog-' + clientKey);
+      if (el) { el.textContent = txt; el.scrollTop = el.scrollHeight; }
+    } catch(e) {}
+  }
+
+  /* ── RUN ALL ── */
+  function runAll(type) {
+    if (type === 'avito') {
+      CLIENTS.filter(c => c.active && c.platforms.includes('avito')).forEach(c => {
+        openGenModal(c.key);
+      });
+    }
+  }
+
+  function runPricecraft(type) {
+    CLIENTS.filter(c => c.pricecraft_enabled).forEach(c => {
+      runPcAction(c.key, 'generate_ozon_file');
+    });
+  }
+
+  function stopAll() {
+    fetch(`${GEN_STOP_URL}?key=${encodeURIComponent(GEN_KEY)}`).catch(()=>{});
+    CLIENTS.forEach(c => onGenStopped(c.key));
+  }
+
+  /* ── ADD CLIENT ── */
+  function addClient() {
+    const key  = document.getElementById('newClientKey').value.trim();
+    const name = document.getElementById('newClientName').value.trim();
+    const cat  = document.getElementById('newClientCat').value.trim();
+    if (!key || !name) { alert('Заполните ключ и название'); return; }
+    const platforms = [];
+    if (document.getElementById('platAvito').checked) platforms.push('avito');
+    if (document.getElementById('platOzon').checked) platforms.push('ozon');
+    if (document.getElementById('platWb').checked) platforms.push('wb');
+    CLIENTS.push({ key, name, category: cat, priority:'ok', platforms, accounts:[], active:true, stats:{ads:0,spend7d:0,contacts7d:0} });
+    renderClients();
+    updateSummary();
+    closeModal('AddClient');
+  }
+
+  /* ── HISTORY ── */
+  function addToHistory(clientKey, status) {
+    const tbody = document.getElementById('hist-' + clientKey);
+    if (!tbody) return;
+    if (tbody.children.length === 1 && tbody.children[0].children[0]?.colSpan === '5') {
+      tbody.innerHTML = '';
+    }
+    const now = new Date().toLocaleString('ru', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+    const stMap = { done: `<span class="hist-tag hist-done">done</span>`, err: `<span class="hist-tag hist-err">error</span>`, run: `<span class="hist-tag hist-run">running</span>` };
+    const tr = `<tr><td>${now}</td><td>—</td><td>—</td><td>${stMap[status]||status}</td><td style="color:var(--muted)">—</td></tr>`;
+    tbody.insertAdjacentHTML('afterbegin', tr);
+  }
+
+  /* ── POLL ALL ── */
+  function pollAll() {
+    // опрашиваем активные генерации
+    Object.keys(genPollers).forEach(k => pollGenLog(k));
+  }
+
+  /* ── TOOLBAR INFO ── */
+  function updateToolbarInfo() {
+    const running = Object.keys(genPollers);
+    const el = document.getElementById('toolbarInfo');
+    const pill = document.getElementById('hdrPill');
+    if (running.length > 0) {
+      if (el) el.textContent = `работает: ${running.join(', ')}`;
+      if (pill) pill.classList.add('on');
+    } else {
+      if (el) el.textContent = 'нет активных процессов';
+      if (pill) pill.classList.remove('on');
+    }
+    const el2 = document.getElementById('sumRunning');
+    if (el2) el2.textContent = running.length;
+  }
+
+  /* ── PUBLIC ── */
+  return {
+    init, switchTab,
+    openGenModal, closeModal, openModal, submitGen, stopGen,
+    runPcAction, runAll, runPricecraft, stopAll,
+    openLogModal, clearLog, addClient,
+    startGenPoll, pollGen,
+  };
+})();
+
+document.addEventListener('DOMContentLoaded', P1.init);
+
+// Закрытие модалок по клику на оверлей
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('click', e => {
+    if (e.target === overlay) overlay.classList.remove('show');
+  });
+});
+</script>
+</body>
+</html>
