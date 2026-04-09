@@ -51,7 +51,7 @@ from generator.core.export import (
 
 # ── XML ──
 from generator.xml.builder import save_avito_xml_to_file
-
+from generator.utils.helpers import path_to_html_link
 
 # ═══════════════════════════════════════════
 # ВСПОМОГАТЕЛЬНЫЕ
@@ -70,7 +70,8 @@ def check_time(start: float) -> None:
 def main() -> None:
     """Основной цикл генерации объявлений."""
     # Инициализация
-    reset_log()
+    # reset_log()
+    reset_log(log_file='generator/log.txt')
     logger = get_logger()
     start_time = time.time()
 
@@ -80,8 +81,9 @@ def main() -> None:
         "1tLVJCMAqYxzHw1SgwT8UcaM4eH6tccMhg8szjBnnkHk/export?format=csv"
     )
     params_file = "cl_rows.csv"
+    # временное отключение для доступа сразу из текстового
     download_csv(params_url, params_file)
-
+    # params_file = "C:/code/mnogunik/"+params_file
     params_list = read_params_from_csv(params_file)
 
     # ── 2. Обработка каждого клиента/аккаунта ──
@@ -191,6 +193,10 @@ def main() -> None:
         # ── 2.10 Сохранение CSV ──
         extended_df.to_csv(output_file_path, index=False)
         print_log(f"CSV: {output_file_path}")
+        print_log(f" -------- -------- -------- -------- -------- -------- -------- -------- -------- -------- ")
+        print_log(f"✅ CSV: {path_to_html_link(output_file_path, 'csv файл  '+params.name_csv)}")
+        print_log(f" -------- -------- -------- -------- -------- -------- -------- -------- -------- -------- ")
+        
         check_time(start_time)
 
         # ── 2.11 Сохранение XML ──
@@ -202,7 +208,13 @@ def main() -> None:
         # ── 2.12 HTML-превью ──
         print_log("Создание HTML-превью...")
         html_path = f"{ROOT_DIR_OUT}/{params.name}_{params.name_csv}_output.html"
-        generate_html_from_df(extended_df, html_path)
+
+        print_log(f" -------- -------- -------- -------- -------- -------- -------- -------- -------- -------- ")
+        print_log(f"✅ prev: {path_to_html_link(html_path, 'превью для файла  '+params.name_csv)}")
+        print_log(f" -------- -------- -------- -------- -------- -------- -------- -------- -------- -------- ")
+        
+        
+        generate_html_from_df(extended_df, html_path, params.name_csv)
         check_time(start_time)
 
     # ── 3. Итог ──

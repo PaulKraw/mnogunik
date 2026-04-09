@@ -61,13 +61,22 @@
         <input type="number" id="startIndex" min="0" max="100000000" placeholder="0 (по умолчанию)" />
         <button id="btnStart" class="primary">Запустить</button>
         <button id="btnStop" class="ghost">Стоп</button>
+        <button id="btnParseLinks" class="ghost">Парсить ссылки (5×5с)</button>
         <div class="meta">
           <span id="flagRun" class="tag">Флаг: <b style="margin-left:6px" id="flagVal">idle</b></span>
           <span id="logState" class="tag warn">лог: неизвестно</span>
           <span id="tip" class="tag">обновление: 2s • процессы 30s</span>
           <span id="procTag" class="tag warn">процессы: ?</span>
+          <span id="parseIter" class="tag">итерация: —</span>
+<span id="linksFound" class="tag">ссылок: 0</span>
         </div>
       </div>
+      <div class="links-panel" style="background: var(--panel); border: 1px solid var(--border); border-radius: 18px; padding: 16px; margin-bottom: 16px;">
+  <h3 style="margin: 0 0 12px 0; font-size: 1.1rem;">📎 Найденные ссылки (CSV / XML / preview)</h3>
+  <div id="linksContainer" style="max-height: 250px; overflow-y: auto; background: #0a0f1f; border-radius: 14px; padding: 8px 12px;">
+    <div class="empty-state" style="color: var(--muted); text-align: center; padding: 20px;">Нажмите «Парсить ссылки»</div>
+  </div>
+</div>
       <small id="info">Ожидание запуска…</small>
       <pre id="output">Лог ещё не загружен…</pre>
       <div class="status" id="status"></div>
@@ -273,6 +282,110 @@
         // молча
       }
     }
+  </script>
+<script>
+  // ========== ПАРСЕР ССЫЛОК ==========
+const $btnParse = document.getElementById('btnParseLinks');
+const $linksContainer = document.getElementById('linksContainer');
+const $parseIterSpan = document.getElementById('parseIter');
+const $linksFoundSpan = document.getElementById('linksFound');
+
+let parseInterval = null;
+let currentParseIter = 0;
+
+// Извлечение ссылок из текста (экранированные &lt;a...&gt; и обычные)
+function extractLinksFromText(text) {
+  const links = [];
+  // Экранированные теги &lt;a href="..." ... &gt;текст&lt;/a&gt;
+  const escapedRegex = /&lt;a\s+href="([^"]+)"(?:\s+[^&gt;]*)?&gt;(.*?)&lt;\/a&gt;/gi;
+  let match;
+  while ((match = escapedRegex.exec(text)) !== null) {
+    let href = match[1].replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    let content = match[2].replace(/&quot;/g, '"').replace(/&amp;/g, '&');
+    links.push({ href, text: content });
+  }
+  // Обычные теги (на случай, если появятся)
+  const plainRegex = /<a\s+href="([^"]+)"(?:\s+[^>]*)?>(.*?)<\/a>/gi;
+  while ((match = plainRegex.exec(text)) !== null) {
+    links.push({ href: match[1], text: match[2] });
+  }
+  // Уникальные по href
+  const unique = [];
+  const seen = new Set();
+  for (const link of links) {
+    if (!seen.has(link.href)) {
+      seen.add(link.href);
+      unique.push(link);
+    }
+  }
+  return unique;
+}
+
+// Отрисовка ссылок в контейнере
+function renderLinks(links) {
+  if (!links.length) {
+    $linksContainer.innerHTML = '<div class="empty-state" style="color: var(--muted); text-align: center; padding: 20px;">🔍 Ссылки не найдены</div>';
+    $linksFoundSpan.textContent = '0';
+    return;
+  }
+  const ul = document.createElement('ul');
+  ul.style.margin = '0';
+  ul.style.paddingLeft = '20px';
+  for (const link of links) {
+    const li = document.createElement('li');
+    li.style.margin = '8px 0';
+    const a = document.createElement('a');
+    a.href = link.href;
+    a.textContent = link.text || link.href;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    a.style.color = 'var(--accent)';
+    li.appendChild(a);
+    ul.appendChild(li);
+  }
+  $linksContainer.innerHTML = '';
+  $linksContainer.appendChild(ul);
+  $linksFoundSpan.textContent = links.length;
+}
+
+// Одна итерация парсинга
+function runParseIteration(iterNumber) {
+  const logText = $out.innerText || $out.textContent;
+  const links = extractLinksFromText(logText);
+  renderLinks(links);
+  $parseIterSpan.textContent = `итерация: ${iterNumber}/5`;
+  return links;
+}
+
+// Запуск цикла из 5 итераций
+function startParsingLoop() {
+  if (parseInterval) {
+    clearInterval(parseInterval);
+    parseInterval = null;
+  }
+  currentParseIter = 1;
+  runParseIteration(1);
+  parseInterval = setInterval(() => {
+    if (currentParseIter >= 5) {
+      clearInterval(parseInterval);
+      parseInterval = null;
+      $parseIterSpan.textContent = 'итерация: завершён';
+    } else {
+      currentParseIter++;
+      runParseIteration(currentParseIter);
+    }
+  }, 5000);
+}
+
+// Обработчик кнопки парсинга
+$btnParse.addEventListener('click', () => {
+  if (parseInterval) {
+    // если уже идёт парсинг – остановить и запустить заново
+    clearInterval(parseInterval);
+    parseInterval = null;
+  }
+  startParsingLoop();
+});
   </script>
 </body>
 </html>

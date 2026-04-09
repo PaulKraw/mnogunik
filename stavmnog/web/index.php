@@ -1,8 +1,21 @@
 <?php
-define('BASE_DIR',    __DIR__);
-define('CONFIG_PATH', BASE_DIR . '/config/clients.json');
-define('DB_PATH',     BASE_DIR . '/data/avito.db');
-define('STATUS_DIR',  BASE_DIR . '/status');
+
+
+define('MONOREPO_ROOT', '/var/www/mnogunik.ru/mng');
+define('STAVMNOG_DIR', MONOREPO_ROOT . '/stavmnog');
+
+// define('PYTHON',       MONOREPO_ROOT . '/.venv/bin/python');
+
+define('DB_PATH',      MONOREPO_ROOT . '/db/avito.db');
+define('STATUS_DIR',   STAVMNOG_DIR . '/web/status');
+define('LOG_DIR',      STAVMNOG_DIR . '/web/logs');
+define('CONFIG_PATH',  MONOREPO_ROOT . '/db//config/clients.json');
+
+
+// define('BASE_DIR',    __DIR__);
+// define('CONFIG_PATH', BASE_DIR . '/config/clients.json');
+// define('DB_PATH',     BASE_DIR . '/data/avito.db');
+// define('STATUS_DIR',  BASE_DIR . '/status');
 define('ACCESS_KEY',  'YOUR_SECRET_KEY');
 
 $key  = $_COOKIE['panel_key'] ?? $_GET['key'] ?? $_POST['key'] ?? '';

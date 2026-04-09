@@ -193,6 +193,7 @@ def add_text_to_image(
     if not isinstance(text, str):
         text = str(text)
 
+    # print(bg_color)
     font = get_font_cached(font_path, font_size) if font_path else ImageFont.load_default()
 
     text_width, _ = calculate_text_bbox(text, font_path, font_size) if font_path else (100, font_size)

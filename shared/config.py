@@ -25,7 +25,7 @@ except ImportError:
 # ═══════════════════════════════════════════
 
 HOSTNAME: str = socket.gethostname()
-IS_LOCAL: bool = HOSTNAME in ("DESKTOP-USR21ET",)
+IS_LOCAL: bool = HOSTNAME in ("DESKTOP-V8DJVL1",)
 
 # Алиас для обратной совместимости с generator
 nout: bool = IS_LOCAL
@@ -45,13 +45,13 @@ if not ROOT_DIR:
 
 # Выходные файлы
 ROOT_DIR_OUT: str = os.environ.get(
-    "MNOGUNIK_ROOT_DIR_OUT", os.path.join(ROOT_DIR, "outfile")
+    "MNOGUNIK_ROOT_DIR_OUT", 
+    os.path.join(ROOT_DIR, "outfile") if IS_LOCAL else "/var/www/mnogunik.ru/outfile"
 )
 
 # URL для ссылок на картинки
 ROOT_URL_OUT: str = os.environ.get(
-    "MNOGUNIK_ROOT_URL_OUT",
-    "http://localhost/outfile" if IS_LOCAL else "http://mnogunik.ru/outfile",
+    "MNOGUNIK_ROOT_URL_OUT", "https://mnogunik.ru/outfile",
 )
 
 # SQLite база данных

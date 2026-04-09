@@ -13,6 +13,7 @@ import pandas as pd
 import xml.etree.ElementTree as ET
 
 from shared.config import ROOT_DIR
+from generator.utils.helpers import path_to_html_link
 
 
 # ═══════════════════════════════════════════
@@ -405,4 +406,8 @@ def save_avito_xml_to_file(
         f.write(clean_xml)
 
     print(f"✅ XML сохранён: {output_path} ({os.path.getsize(output_path)} байт)")
+    print(f" -------- -------- -------- -------- -------- -------- -------- -------- -------- -------- ")
+    print(f"✅ XML: {path_to_html_link(output_path)}")
+    print(f" -------- -------- -------- -------- -------- -------- -------- -------- -------- -------- ")
+    
     return output_path

@@ -212,7 +212,7 @@ def parse_price_field(field_str: str) -> Optional[int]:
         start, end, step = int(m.group(1)), int(m.group(2)), int(m.group(3))
         return random.choice(list(range(start, end + 1, step)))
     try:
-        return int(field_str)
+        return str(field_str)
     except ValueError:
         return None
 

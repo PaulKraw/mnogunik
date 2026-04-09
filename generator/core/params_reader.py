@@ -29,6 +29,7 @@ def read_params_from_csv(file_path: str) -> List[ClientParams]:
     """
     params_list: List[ClientParams] = []
 
+    print(file_path)
     with open(file_path, newline="", encoding="utf-8") as f:
         reader = csv.DictReader(f)
         for row in reader:

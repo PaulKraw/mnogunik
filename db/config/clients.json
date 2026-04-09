@@ -1,0 +1,54 @@
+{
+    "evgusl": {
+      "name": "evgusl",
+      "client_id": "L8U0lc832TBKcPYBsvyg",
+      "client_secret": "7tQdOxL0bIbcgwQOkLu01GbmMwF5BTMLKN2B6bR1",
+      "user_id": "200451690",
+      "sheet_id": "1BmUi5YM_tDn67GfdXxZj53muuF64bYgWQhDgZFyDJ-o",
+      "sheet_bids": "baza_u (копия)",
+      "google_key_file": "config/keytableamunskow.json",
+      "active": true
+    },
+    "evg": {
+      "name": "evg",
+      "client_id": "20j6_3c4hfjBp9BmrYPk",
+      "client_secret": "RUFLgNB8eD4DTCLcDr7eRdwJ-IcP5OH3x4AJkZja",
+      "user_id": "200351660",
+      "sheet_id": "1BmUi5YM_tDn67GfdXxZj53muuF64bYgWQhDgZFyDJ-o",
+      "sheet_bids": "baza_t (копия)",
+      "google_key_file": "config/keytableamunskow.json",
+      "active": true
+    },
+    "pss": {
+      "name": "pss",
+      "client_id": "iEBGgYhhL3gAyvoN1Q-d",
+      "client_secret": "gbckc167NI4BIwPZVZqcFqPzCJL-ZPHitU76IdIT",
+      "user_id": "304681952",
+      "sheet_id": "1S2j3-4sAuh7rSOv4fNQYBqkb0upvArWjs459hSvdvXA",
+      "sheet_bids": "baza",
+      "google_key_file": "config/keytableamunskow.json",
+      "active": true
+    },
+    "svmy": {
+      "name": "svmy",
+      "client_id": "bg5oNUmjPkHmTDrmM6G7",
+      "client_secret": "V7kh4r-AKspTlD4wWNaQvpo0qgSgoxfDOV7qCw18",
+      "user_id": "87321862",
+      "sheet_id": "11VEcuFKHhDqbD65Dv8sSgPEsAYcGAUB3xvVdictEgI4",
+      "sheet_bids": "baza_u",
+      "google_key_file": "config/keytableamunskow.json",
+      "active": true
+    },
+    "coffee": {
+      "name": "coffee",
+      "client_id": "bg5oNUmjPkHmTDrmM6G7",
+      "client_secret": "V7kh4r-AKspTlD4wWNaQvpo0qgSgoxfDOV7qCw18",
+      "user_id": "87321862",
+      "sheet_id": "1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM",
+      "sheet_bids": "baza_c",
+      "google_key_file": "config/keytableamunskow.json",
+      "active": true
+    }
+  }
+
+

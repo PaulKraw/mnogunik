@@ -67,3 +67,25 @@ def format_execution_time(seconds: float) -> str:
 def strip_html_tags(text: str) -> str:
     """Удаляет HTML-теги из текста."""
     return re.sub(r"<.*?>", "", text)
+
+
+def path_to_html_link(local_path: str, text: str = None, base_url: str = "https://mnogunik.ru") -> str:
+    """
+    Преобразует локальный путь в HTML-ссылку <a> с target="_blank".
+
+    Пример:
+        >>> path = "/var/www/mnogunik.ru/proj/svmy/svmy_usl_2026-04-08_102.xml"
+        >>> path_to_html_link(path)
+        '<a href="https://mnogunik.ru/proj/svmy/svmy_usl_2026-04-08_102.xml" target="_blank">svmy_usl_2026-04-08_102.xml</a>'
+    """
+    # Убираем префикс /var/www/mnogunik.ru
+    relative_path = local_path.replace("/var/www/mnogunik.ru", "")
+    # Формируем полный URL
+    full_url = base_url + relative_path
+    # Берём имя файла для текста ссылки
+    link_text = text if text else local_path.split("/")[-1]
+
+    # Возвращаем HTML
+    return f'<a href="{full_url}" target="_blank">{link_text}</a>'
+
+

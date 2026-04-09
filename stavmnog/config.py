@@ -13,13 +13,17 @@ from shared.config import MONOREPO_ROOT, DB_PATH
 # ═══════════════════════════════════════════
 # ПУТИ (stavmnog-специфичные)
 # ═══════════════════════════════════════════
+# define('MONOREPO_ROOT', '/var/www/mnogunik.ru/mng');
 
 STAVMNOG_DIR = os.path.dirname(os.path.abspath(__file__))
-CONFIG_DIR   = os.path.join(STAVMNOG_DIR, "config")
-STATUS_DIR   = os.path.join(STAVMNOG_DIR, "status")
-LOG_DIR      = os.path.join(STAVMNOG_DIR, "logs")
+CONFIG_DIR   = os.path.join(MONOREPO_ROOT, "db//config")
+STATUS_DIR   = os.path.join(STAVMNOG_DIR, "web/status")
+LOG_DIR      = os.path.join(STAVMNOG_DIR, "web/logs")
 
-CLIENTS_JSON = os.path.join(CONFIG_DIR, "clients.json")
+CLIENTS_JSON = os.path.join(MONOREPO_ROOT, "/db//config/clients.json")
+
+
+
 
 
 def load_clients() -> dict:

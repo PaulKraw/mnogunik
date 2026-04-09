@@ -1,15 +1,37 @@
 <?php
+
+define('MONOREPO_ROOT', '/var/www/mnogunik.ru/mng');
+define('STAVMNOG_DIR', MONOREPO_ROOT . '/stavmnog');
+
+// define('PYTHON',       MONOREPO_ROOT . '/.venv/bin/python');
+$python = MONOREPO_ROOT . '/.venv/bin/python';
+
+define('DB_PATH',      MONOREPO_ROOT . '/db/avito.db');
+// define('STATUS_DIR',   STAVMNOG_DIR . '/status');
+// define('LOG_DIR',      STAVMNOG_DIR . '/logs');
+// define('CONFIG_PATH',  MONOREPO_ROOT . '/db//config/clients.json');
+
+$clients = json_decode(file_get_contents(MONOREPO_ROOT . '/db/config/clients.json'), true) ?? [];
+
+
+
+// define('CONFIG_PATH',  MONOREPO_ROOT . '/db//config/clients.json');
+// function load_clients(): array {
+//     if (!file_exists(CONFIG_PATH)) return [];
+//     $d = json_decode(file_get_contents(CONFIG_PATH), true);
+//     return is_array($d) ? $d : [];
+// }
+
 define('ACCESS_KEY', 'YOUR_SECRET_KEY');
 
 //$base_dir   = __DIR__;
 //$python     = $base_dir . '/.venv/bin/python';
 
-$MONOREPO_ROOT = '/var/www/mnogunik.ru/mng';
-$base_dir = $MONOREPO_ROOT;
-$python = $MONOREPO_ROOT . '/.venv/bin/python';
+// $MONOREPO_ROOT = '/var/www/mnogunik.ru/mng';
+// $base_dir = $MONOREPO_ROOT;
 
-$status_dir = $base_dir . '/status';
-$log_dir    = $base_dir . '/logs';
+$status_dir = STAVMNOG_DIR . '/web/status';
+$log_dir    = STAVMNOG_DIR . '/web/logs';
 
 header('Content-Type: application/json');
 
@@ -24,7 +46,7 @@ if (!$op || !$client) {
     http_response_code(400); echo json_encode(['error'=>'op and client required']); exit;
 }
 
-$clients = json_decode(file_get_contents($base_dir . '/config/clients.json'), true) ?? [];
+
 if (!array_key_exists($client, $clients)) {
     http_response_code(400); echo json_encode(['error'=>'unknown client']); exit;
 }
@@ -58,7 +80,7 @@ function check_and_clean(string $sd, string $op_key, string $client): bool {
 switch ($op) {
     case 'download':
         $op_key  = 'download';
-        $script  = 'scripts/download.py';
+        $script  = MONOREPO_ROOT . 'scripts/download.py';
         // rewrite_days из POST или из файла настроек
         $rw = (int)($_POST['rewrite_days'] ?? 0);
         if ($rw < 1) {
@@ -80,7 +102,7 @@ switch ($op) {
 
     case 'apply_bids':
         $op_key  = 'bids';
-        $script  = 'scripts/apply_bids.py';
+        $script  = MONOREPO_ROOT . 'scripts/apply_bids.py';
         $args    = "--client={$client}";
         $logfile = "logs/bids_{$client}.log";
         $pidfile = "status/bids_{$client}.pid";
@@ -97,30 +119,37 @@ if (check_and_clean($status_dir, $op_key, $client)) {
 
 // --- запуск ---
 if ($op === 'build_export') {
-    $cmd = sprintf(
-        'bash -lc \'cd %s && nohup %s -u scripts/build_stats.py --client=%s && %s -u scripts/export_stats.py --client=%s >> %s 2>&1 & echo $! > %s\'',
-        escapeshellarg($base_dir),
-        escapeshellarg($python), escapeshellarg($client),
-        escapeshellarg($python), escapeshellarg($client),
-        escapeshellarg($logfile), escapeshellarg($pidfile)
-    );
+    $script  = MONOREPO_ROOT . 'scripts/build_stats.py';
+    $cmd = "cd MONOREPO_ROOT && PYTHONPATH=MONOREPO_ROOT nohup $python $script >> $logfile 2>&1 & echo $! > $pidfile ";
+
+
+    // $cmd = sprintf(
+    //     'bash -lc \'cd %s && nohup %s -u scripts/build_stats.py --client=%s && %s -u scripts/export_stats.py --client=%s >> %s 2>&1 & echo $! > %s\'',
+    //     escapeshellarg($base_dir),
+    //     escapeshellarg($python), escapeshellarg($client),
+    //     escapeshellarg($python), escapeshellarg($client),
+    //     escapeshellarg($logfile), escapeshellarg($pidfile)
+    // );
 } else {
-    $cmd = sprintf(
-        'bash -lc \'cd %s && nohup %s -u %s %s >> %s 2>&1 & echo $! > %s\'',
-        escapeshellarg($base_dir),
-        escapeshellarg($python),
-        escapeshellarg($script),
-        $args,
-        escapeshellarg($logfile),
-        escapeshellarg($pidfile)
-    );
+
+    $cmd = "cd MONOREPO_ROOT && PYTHONPATH=MONOREPO_ROOT nohup $python $script >> $logfile 2>&1 & echo $! > $pidfile ";
+
+    // $cmd = sprintf(
+    //     'bash -lc \'cd %s && nohup %s -u %s %s >> %s 2>&1 & echo $! > %s\'',
+    //     escapeshellarg($base_dir),
+    //     escapeshellarg($python),
+    //     escapeshellarg($script),
+    //     $args,
+    //     escapeshellarg($logfile),
+    //     escapeshellarg($pidfile)
+    // );
 }
 
 shell_exec($cmd);
 usleep(500000);
 
 $pid = 0;
-$pf  = $base_dir . '/' . $pidfile;
+$pf  = STAVMNOG_DIR . '/' . $pidfile;
 if (file_exists($pf)) $pid = (int)trim(file_get_contents($pf));
 
 echo json_encode(['status'=>'started','op'=>$op,'client'=>$client,'pid'=>$pid]);

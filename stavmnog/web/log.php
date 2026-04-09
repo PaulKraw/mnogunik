@@ -5,7 +5,12 @@
  */
 
 define('ACCESS_KEY', 'YOUR_SECRET_KEY');
-define('LOG_DIR',    dirname(__FILE__) . '/logs');
+// define('LOG_DIR',    dirname(__FILE__) . '/logs');
+
+define('MONOREPO_ROOT', '/var/www/mnogunik.ru/mng');
+define('STAVMNOG_DIR', MONOREPO_ROOT . '/web/stavmnog');
+define('LOG_DIR',      STAVMNOG_DIR . '/web/logs');
+
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
