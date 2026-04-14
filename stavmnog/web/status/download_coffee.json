@@ -1,0 +1,11 @@
+{
+  "operation": "download",
+  "status": "done",
+  "started_at": "2026-04-14 15:00:09",
+  "finished_at": "2026-04-14 15:04:31",
+  "period_from": "2026-04-10",
+  "period_to": "2026-04-14",
+  "rows_fetched": 361,
+  "total_spend_rub": 2719.8,
+  "error": null
+}

@@ -89,3 +89,27 @@ def col_letter(n: int) -> str:
         n, r = divmod(n - 1, 26)
         s = chr(65 + r) + s
     return s
+
+
+def norm_avito_id(raw) -> str:
+    """
+    Приводит AvitoId к канонической строковой форме.
+    Обрабатывает: пробелы, апострофы, запятые, scientific notation, float с .0.
+    Возвращает пустую строку если не удалось распознать.
+    """
+    if raw is None:
+        return ""
+    s = str(raw).strip().replace("'", "").replace(" ", "").replace(",", "")
+    if not s or s.lower() in ("none", "nan", "avitoid", "null"):
+        return ""
+    # scientific notation или float
+    if "e" in s.lower() or "." in s:
+        try:
+            return str(int(float(s)))
+        except (ValueError, OverflowError):
+            return ""
+    # чистое целое в строке
+    try:
+        return str(int(s))
+    except ValueError:
+        return ""

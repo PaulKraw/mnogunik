@@ -90,9 +90,11 @@ if (check_and_clean($status_dir, $op_key, $client)) {
     echo json_encode(['status'=>'already_running','op'=>$op,'client'=>$client]); exit;
 }
 
+
+
 if ($op === 'build_export') {
     $cmd = sprintf(
-        'cd %s && PYTHONPATH=%s nohup %s -u %s --client=%s && PYTHONPATH=%s nohup %s -u %s --client=%s >> %s 2>&1 & echo $! > %s',
+        'cd %s && ( PYTHONPATH=%s nohup %s -u %s --client=%s ; PYTHONPATH=%s nohup %s -u %s --client=%s ) >> %s 2>&1 & echo $! > %s',
         escapeshellarg(MONOREPO_ROOT),
         escapeshellarg(MONOREPO_ROOT),
         escapeshellarg($python), escapeshellarg($script1), escapeshellarg($client),

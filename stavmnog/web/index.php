@@ -329,6 +329,11 @@ async function saveSetting(name, value) {
  * @param {string} op - Название операции (например, 'download', 'apply_rates' и т.д.).
  */
 async function runOp(client, op) {
+
+    console.group(`%c[RUN] ${op} / ${client}`, 'color:#ffd000;font-weight:bold');
+    console.log('time:', new Date().toISOString());
+    console.log('button:', document.getElementById(`btn-${op}-${client}`));
+    console.groupEnd();
     // 1. Блокируем кнопку операции для этого клиента, чтобы предотвратить повторный запуск
     const btn = document.getElementById(`btn-${op}-${client}`);
     if (btn) {
@@ -352,7 +357,9 @@ async function runOp(client, op) {
             body: fd
         });
         const j = await r.json();
-        // console.log('run:', client, op, j);
+        console.log(`[RUN RESPONSE] ${client}/${op}:`, j);
+        if (j.pid) console.log(`%cPID=${j.pid}`, 'color:#00d4ff');
+        if (j.error) console.error(`[RUN ERROR]`, j.error);
 
         // Если сервер сообщает, что операция уже запущена — синхронизируем состояние интерфейса
         if (j.status === 'already_running') {
@@ -457,76 +464,68 @@ function updateBadges() {
  * @param {string} op - Название операции ('apply_bids', 'download' и т.д.)
  */
 function startPoll(client, op) {
-    // Уникальный ключ для хранения интервала опроса (глобальный объект pollers)
     const pk = `${client}:${op}`;
-
-    // Если для этой пары (клиент+операция) уже есть активный опрос — останавливаем его
+    console.group(`%c[POLL START] ${pk}`, 'color:#00d4ff;font-weight:bold');
+    console.log('time:', new Date().toISOString());
+    
     if (pollers[pk]) {
+        console.warn('уже был опрос, перезапускаем');
         clearInterval(pollers[pk]);
     }
+    console.groupEnd();
 
-    // Специфичная логика для операции 'apply_bids': показать блок с паролем (если он существует)
     if (op === 'apply_bids') {
         const pw = document.getElementById(`pw-${client}`);
-        if (pw) {
-            pw.style.display = 'block';
-        }
+        if (pw) pw.style.display = 'block';
     }
 
-    // Запускаем новый интервал (каждые 2500 мс = 2.5 сек)
+    let tick = 0;
     pollers[pk] = setInterval(async () => {
+        tick++;
+        const url = `status.php?key=${encodeURIComponent(KEY)}&op=${op}&client=${client}&_=${Date.now()}`;
         try {
-            // Запрос к status.php с параметрами: ключ, операция, клиент, и уникальный timestamp для предотвращения кэширования
-            const r = await fetch(
-                `status.php?key=${encodeURIComponent(KEY)}&op=${op}&client=${client}&_=${Date.now()}`,
-                { cache: 'no-store' }
-            );
-            if (!r.ok) return; // Если ответ не успешный — выходим, не обновляя статус
-
-            const s = await r.json();
-            console.log(s);
-            if (!s || !s.status) return; // Если ответ не содержит поле status — игнорируем
-
-            // Вызов внешней функции: обновляет отображение строки состояния для клиента/операции.
-            // Передаётся: client, op, объект статуса s, и флаг (s.status === 'running') — вероятно, для блокировки/разблокировки элементов.
+            const r = await fetch(url, {cache:'no-store'});
+            const txt = await r.text();
+            console.log(`[POLL ${pk} #${tick}] HTTP ${r.status}, body:`, txt.slice(0,300));
+            
+            if (!r.ok) return;
+            let s;
+            try { s = JSON.parse(txt); } 
+            catch(e) { console.error(`[POLL ${pk}] JSON parse error:`, e, txt); return; }
+            
+            if (!s || !s.status) { 
+                console.log(`[POLL ${pk}] пустой статус — ждём`); 
+                return; 
+            }
+            
+            console.log(`[POLL ${pk}] status=${s.status}`, s);
             setStLine(client, op, s, s.status === 'running');
-
-            // Для операции 'apply_bids' вызывается обновление прогресс-бара (или другого визуального элемента)
+            
             if (op === 'apply_bids') {
                 updProg(client, s);
+                if (s.overall) {
+                    console.log(`[BIDS ${client}] taken=${s.overall.taken} done=${s.overall.done} ok=${s.overall.ok} err=${s.overall.err} skip=${s.overall.skip}`);
+                }
             }
 
-            // Если операция завершена (done) или произошла ошибка — останавливаем опрос и чистим интерфейс
             if (s.status === 'done' || s.status === 'error') {
+                console.log(`%c[POLL ${pk}] FINISH: ${s.status}`, 'color:' + (s.status==='done'?'#00e87a':'#ff4060'));
+                if (s.error) console.error(`[${pk}] ERROR:`, s.error);
                 clearInterval(pollers[pk]);
                 delete pollers[pk];
-
-                // Скрываем кнопку Stop (предположительно, вызов hideStop)
                 hideStop(client, op);
-
-                // Находим кнопку выполнения операции и разблокируем её
                 const btn = document.getElementById(`btn-${op}-${client}`);
-                if (btn) {
-                    btn.disabled = false;
-                }
-
-                // Для 'apply_bids' скрываем блок с паролем
+                if (btn) btn.disabled = false;
                 if (op === 'apply_bids') {
                     const pw = document.getElementById(`pw-${client}`);
-                    if (pw) {
-                        pw.style.display = 'none';
-                    }
+                    if (pw) pw.style.display = 'none';
                 }
-
-                // Обновляем бейджи (например, счётчики активных операций)
                 updateBadges();
             }
-        } catch (e) {
-            // Ошибки сети или парсинга молча игнорируются (логирование отсутствует)
+        } catch(e) { 
+            console.error(`[POLL ${pk}] network error:`, e); 
         }
     }, 2500);
-
-    // Сразу после запуска опроса обновляем бейджи (вероятно, чтобы показать "опрос активен")
     updateBadges();
 }
 
@@ -584,6 +583,16 @@ document.addEventListener('DOMContentLoaded', () => {
     endforeach; ?>
     updateBadges();
 });
+
+window.dbg = function(client, op) {
+    fetch(`log.php?key=${encodeURIComponent(KEY)}&client=${client}&op=${op}&lines=200`)
+        .then(r => r.json())
+        .then(lines => {
+            console.group(`%c[LOG] ${client}/${op} (${lines.length} строк)`, 'color:#00d4ff');
+            lines.forEach(l => console.log(l));
+            console.groupEnd();
+        });
+};
 </script>
 <?php endif; ?>
 </body>
@@ -605,4 +614,8 @@ function stRender(array $s, bool $alive=false){
     }elseif($st==='error') $txt.='ошибка: '.htmlspecialchars(substr($s['error']??'',0,55));
     echo "<span class=\"$c\"></span>".htmlspecialchars($txt);
 }
+
+
+
+
 ?>

@@ -1,13 +1,13 @@
 {
-  "ts": 1776118736.770217,
+  "ts": 1776169749.5835886,
   "today": "14.04",
   "status": "done",
   "total": 29,
   "overall": {
-    "taken": 0,
-    "done": 0,
+    "taken": 29,
+    "done": 29,
     "ok": 0,
-    "err": 0,
+    "err": 29,
     "skip": 0
   },
   "by_client": {},

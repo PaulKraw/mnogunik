@@ -1,0 +1,20 @@
+2026-04-14 15:21:02 [WARNING] build_stats coffee уже запущен (pid=19243)
+2026-04-14 15:21:03 [INFO] ==================================================
+2026-04-14 15:21:03 [INFO] СТАРТ | export_stats | coffee
+2026-04-14 15:21:03 [INFO] ==================================================
+2026-04-14 15:21:03 [INFO] Подключение к Google Sheets: 1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+2026-04-14 15:21:05 [INFO] Строк в листе: 35
+2026-04-14 15:21:05 [INFO] AvitoId в листе: валидных=35, пустых/битых=0
+2026-04-14 15:21:05 [INFO] Примеры ключей (первые 5): ['7811815861', '8035421536', '8035200292', '8034979055', '8034933626']
+2026-04-14 15:21:05 [INFO] Аналитика в БД: всего=27, с валидным id=27
+2026-04-14 15:21:05 [INFO] В обоих: 24 | только БД: 3 | только лист: 11
+2026-04-14 15:21:05 [INFO] В БД есть, в листе НЕТ (первые 5): ['7843085197', '7938931585', '8003143707']
+2026-04-14 15:21:05 [INFO] В листе есть, в БД НЕТ (первые 5): ['8035216048', '8034977708', '8035605379', '8035114736', '8035271871']
+2026-04-14 15:21:05 [INFO] Запись: c данными=24, нулями=11, без AvitoId=0, всего ячеек=350
+2026-04-14 15:21:06 [INFO]   Записано 350 / 350
+2026-04-14 15:21:06 [INFO] bid_code обновлён в БД: 24
+2026-04-14 15:21:06 [INFO] ГОТОВО | export_stats | coffee | 24 строк

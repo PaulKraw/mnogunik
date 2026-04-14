@@ -79,14 +79,11 @@ def write_log(msg: str, log_file: Optional[str] = None) -> None:
     """
     ts = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     line = f"{ts} | {msg}\n"
-    log_file='generator/log.txt'
     if log_file:
         os.makedirs(os.path.dirname(log_file) or ".", exist_ok=True)
         with open(log_file, "a", encoding="utf-8") as f:
             f.write(line)
-
-    print(msg)
-
+    print(msg)  # всегда в stdout — оттуда nohup пишет в лог процесса
 
 def write_status(
     status: str,

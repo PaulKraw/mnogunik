@@ -12,6 +12,7 @@ import re
 import sqlite3
 import time
 from datetime import datetime
+from venv import logger
 
 from shared.config import DB_PATH, DB_CONF
 from shared.google_sheets import get_gspread_client
@@ -19,7 +20,7 @@ from shared.logger import get_logger
 
 from stavmnog.config import get_client_config, COL, STATUS_DIR, LOG_DIR
 from stavmnog.utils.pid_lock import acquire_lock, release_lock
-from stavmnog.utils.formulas import calc_bid, safe_float, col_letter
+from stavmnog.utils.formulas import calc_bid, safe_float, col_letter, norm_avito_id
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -140,16 +141,26 @@ def run(client_key: str):
     # Индекс AvitoId → номер строки
     avito_col = COL["AvitoId"] - 1
     sheet_index = {}
+    sheet_rows_bad = []  # строки с невалидным AvitoId
+
     for i, row in enumerate(data_rows):
         raw = str(row[avito_col]).strip() if avito_col < len(row) else ""
-        if raw and raw.lower() not in ("", "none", "avitoid"):
-            try:
-                clean = str(int(float(raw)))
-            except ValueError:
-                clean = raw
-            sheet_index[clean] = i + 2  # 2-based (заголовок + 0-based)
+        clean = norm_avito_id(raw)
+        sheet_row = i + 2
+        if not clean:
+            sheet_rows_bad.append((sheet_row, raw))
+            continue
+        sheet_index[clean] = sheet_row
 
-    logger.info(f"AvitoId в листе: {len(sheet_index)}")
+
+
+
+    logger.info(f"AvitoId в листе: валидных={len(sheet_index)}, пустых/битых={len(sheet_rows_bad)}")
+    if sheet_rows_bad[:5]:
+        logger.info(f"Примеры битых: {sheet_rows_bad[:5]}")
+
+    # logger.info(f"AvitoId в листе: {len(sheet_index)}")
+    logger.info(f"Примеры ключей (первые 5): {list(sheet_index.keys())[:5]}")
 
     # Данные из SQLite
     conn = sqlite3.connect(DB_PATH)
@@ -158,12 +169,31 @@ def run(client_key: str):
     try:
         stats = conn.execute("""
             SELECT item_id, ctr_7d, cpl_7d, views_7d, contacts_7d,
-                   ctr_prev, cpl_prev, views_prev, contacts_prev,
-                   bid_code, limit_code
+                ctr_prev, cpl_prev, views_prev, contacts_prev,
+                bid_code, limit_code
             FROM current_stats WHERE client_key = ?
         """, (client_key,)).fetchall()
 
-        logger.info(f"Аналитика в БД: {len(stats)} строк")
+        # Строим словарь БД по нормализованному ключу
+        db_by_id = {}
+        for s in stats:
+            nid = norm_avito_id(s["item_id"])
+            if nid:
+                db_by_id[nid] = s
+
+        logger.info(f"Аналитика в БД: всего={len(stats)}, с валидным id={len(db_by_id)}")
+
+        # Диагностика пересечений
+        sheet_ids = set(sheet_index.keys())
+        db_ids = set(db_by_id.keys())
+        in_both = sheet_ids & db_ids
+        only_db = db_ids - sheet_ids
+        only_sheet = sheet_ids - db_ids
+        logger.info(f"В обоих: {len(in_both)} | только БД: {len(only_db)} | только лист: {len(only_sheet)}")
+        if only_db:
+            logger.info(f"В БД есть, в листе НЕТ (первые 5): {list(only_db)[:5]}")
+        if only_sheet:
+            logger.info(f"В листе есть, в БД НЕТ (первые 5): {list(only_sheet)[:5]}")
 
         minn_col = COL["мин"] - 1
         maxx_col = COL["макс"] - 1
@@ -172,13 +202,14 @@ def run(client_key: str):
         updates = []
         bid_code_updates = []
         rows_written = 0
+        rows_zeroed = 0  # не нашли в БД — ставим нули
+        rows_marked = 0  # невалидный AvitoId — ставим маркер
 
-        for s in stats:
-            item_id_str = str(s["item_id"])
-            if item_id_str not in sheet_index:
-                continue
+        def cell(col_idx, sheet_row, value):
+            return {"range": f"{col_letter(col_idx)}{sheet_row}", "values": [[value]]}
 
-            sheet_row = sheet_index[item_id_str]
+        # 1) Проходим по всем валидным строкам листа
+        for avito_id, sheet_row in sheet_index.items():
             data_idx = sheet_row - 2
             sdr = data_rows[data_idx] if data_idx < len(data_rows) else []
 
@@ -186,28 +217,57 @@ def run(client_key: str):
             maxx = safe_float(sdr[maxx_col] if maxx_col < len(sdr) else 0)
             prev_bid = safe_float(sdr[koret_col] if koret_col < len(sdr) else 0)
 
-            bid_code = calc_bid(minn, maxx, prev_bid, s["ctr_7d"] or 0, s["views_7d"] or 0, s["contacts_7d"] or 0)
-            bid_code_updates.append((bid_code, s["item_id"], client_key))
+            s = db_by_id.get(avito_id)
 
-            def cell(col_idx, value):
-                return {"range": f"{col_letter(col_idx)}{sheet_row}", "values": [[value]]}
+            if s is not None:
+                # Нормальный случай — есть статистика
+                ctr_7d = s["ctr_7d"] or 0
+                views_7d = s["views_7d"] or 0
+                contacts_7d = s["contacts_7d"] or 0
+                bid_code = calc_bid(minn, maxx, prev_bid, ctr_7d, views_7d, contacts_7d)
+                bid_code_updates.append((bid_code, int(avito_id), client_key))
 
-            updates += [
-                cell(COL["pct_7d"], round(s["ctr_7d"] or 0, 4)),
-                cell(COL["cpl_7d"], round(s["cpl_7d"] or 0, 2)),
-                cell(COL["clicks_7d"], s["views_7d"] or 0),
-                cell(COL["leads_7d"], s["contacts_7d"] or 0),
-                cell(COL["pct_prev"], round(s["ctr_prev"] or 0, 4)),
-                cell(COL["cpl_prev"], round(s["cpl_prev"] or 0, 2)),
-                cell(COL["clicks_prev"], s["views_prev"] or 0),
-                cell(COL["leads_prev"], s["contacts_prev"] or 0),
-                cell(COL["bid_code"], bid_code),
-                cell(COL["limit_code"], s["limit_code"] if s["limit_code"] is not None else ""),
-            ]
-            rows_written += 1
+                updates += [
+                    cell(COL["pct_7d"], sheet_row, round(ctr_7d, 4)),
+                    cell(COL["cpl_7d"], sheet_row, round(s["cpl_7d"] or 0, 2)),
+                    cell(COL["clicks_7d"], sheet_row, views_7d),
+                    cell(COL["leads_7d"], sheet_row, contacts_7d),
+                    cell(COL["pct_prev"], sheet_row, round(s["ctr_prev"] or 0, 4)),
+                    cell(COL["cpl_prev"], sheet_row, round(s["cpl_prev"] or 0, 2)),
+                    cell(COL["clicks_prev"], sheet_row, s["views_prev"] or 0),
+                    cell(COL["leads_prev"], sheet_row, s["contacts_prev"] or 0),
+                    cell(COL["bid_code"], sheet_row, bid_code),
+                    cell(COL["limit_code"], sheet_row,
+                        s["limit_code"] if s["limit_code"] is not None else ""),
+                ]
+                rows_written += 1
+            else:
+                # AvitoId есть в листе, но в БД нет данных — ставим нули
+                bid_code = calc_bid(minn, maxx, prev_bid, 0, 0, 0)
+                updates += [
+                    cell(COL["pct_7d"], sheet_row, 0),
+                    cell(COL["cpl_7d"], sheet_row, 0),
+                    cell(COL["clicks_7d"], sheet_row, 0),
+                    cell(COL["leads_7d"], sheet_row, 0),
+                    cell(COL["pct_prev"], sheet_row, 0),
+                    cell(COL["cpl_prev"], sheet_row, 0),
+                    cell(COL["clicks_prev"], sheet_row, 0),
+                    cell(COL["leads_prev"], sheet_row, 0),
+                    cell(COL["bid_code"], sheet_row, bid_code),
+                    cell(COL["limit_code"], sheet_row, ""),
+                ]
+                rows_zeroed += 1
 
-        logger.info(f"Совпало: {rows_written} → запись {len(updates)} ячеек...")
-        _batch_update_with_retry(ws, updates, logger)
+        # 2) Строки с битым/пустым AvitoId — помечаем в колонке Сообщение
+        for sheet_row, raw in sheet_rows_bad:
+            updates.append(cell(COL["Сообщение"], sheet_row, "нет AvitoId"))
+            rows_marked += 1
+
+        logger.info(
+            f"Запись: c данными={rows_written}, нулями={rows_zeroed}, "
+            f"без AvitoId={rows_marked}, всего ячеек={len(updates)}"
+        )
+        _batch_update_with_retry(ws, updates, logger)       
 
         if bid_code_updates:
             conn.executemany("""
@@ -250,3 +310,4 @@ if __name__ == "__main__":
     ap.add_argument("--client", required=True)
     args = ap.parse_args()
     run(args.client)
+

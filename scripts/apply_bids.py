@@ -200,9 +200,12 @@ def main():
     ap = argparse.ArgumentParser(description="Применение ставок Авито из Google Sheets")
     ap.add_argument("--client", required=True, help="Ключ клиента из clients.json")
     ap.add_argument("--batch-size", type=int, default=BATCH_SIZE)
-    ap.add_argument("--ignore-date", action="store_true",
-                    help="Очистить 'дата применения' перед стартом")
+    ap.add_argument("--ignore-date", action="store_true", default=True,
+                    help="Игнорировать флаг !Применил и дату — обрабатывать всё (default: True)")
+    ap.add_argument("--respect-date", dest="ignore_date", action="store_false",
+                    help="Уважать !Применил=да и пропускать уже применённые сегодня")
     args = ap.parse_args()
+
 
 
     os.makedirs(LOG_DIR, exist_ok=True)
@@ -277,17 +280,58 @@ def main():
 
             # Фильтрация
             candidates = []
+            stats = {"total": 0, "already_da": 0, "same_date": 0, "no_avito": 0, "no_bid": 0, "to_do": 0}
+            clear_updates = []  # строки, у которых нужно очистить "!Применил" и "дата применения"
+
             for r in recs:
-                if str(r.get("!Применил", "")).strip().lower() == "да":
-                    continue
-                if str(r.get("дата применения", "")).strip() == today_dm:
-                    continue
+                stats["total"] += 1
+                rn = r["__row__"]
+                prim = str(r.get("!Применил", "")).strip().lower()
+                dat = str(r.get("дата применения", "")).strip()
                 avito_raw = str(r.get("AvitoId", "")).strip()
                 bid_raw = str(r.get("Ставка", "")).strip()
-                if not avito_raw or avito_raw.lower() == "none" or not bid_raw:
-                    candidates.append((r, "skip"))
+
+                # Базовые пропуски — нет данных вообще
+                if not avito_raw or avito_raw.lower() == "none":
+                    stats["no_avito"] += 1
+                    candidates.append((r, "skip_no_avito"))
                     continue
+                if not bid_raw:
+                    stats["no_bid"] += 1
+                    candidates.append((r, "skip_no_bid"))
+                    continue
+
+                # Если ignore_date — сбрасываем флаги и всё равно обрабатываем
+                if args.ignore_date:
+                    if prim == "да" or dat:
+                        clear_updates += [
+                            {"range": f"{col_letter(hdr_idx['!Применил'])}{rn}", "values": [[""]]},
+                            {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[""]]},
+                        ]
+                    stats["to_do"] += 1
+                    candidates.append((r, "do"))
+                    continue
+
+                # Обычный режим — пропускаем уже применённые сегодня
+                if prim == "да":
+                    stats["already_da"] += 1
+                    write_log(f"[apply_bids] SKIP row={rn} !Применил=да AvitoId={avito_raw}")
+                    continue
+                if dat == today_dm:
+                    stats["same_date"] += 1
+                    write_log(f"[apply_bids] SKIP row={rn} дата={dat}")
+                    continue
+
+                stats["to_do"] += 1
                 candidates.append((r, "do"))
+
+            write_log(f"[apply_bids] ФИЛЬТР {start_row}-{end_row}: {stats}")
+
+            # Применяем сброс флагов одним батчем
+            if clear_updates:
+                write_log(f"[apply_bids] Сброс !Применил/дата для {len(clear_updates)//2} строк")
+                _batch_update_retry(ws, clear_updates) 
+
 
             if not candidates:
                 start_row = end_row + 1
