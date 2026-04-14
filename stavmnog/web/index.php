@@ -153,6 +153,12 @@ button,.btn{cursor:pointer;border:none;border-radius:7px;font-family:var(--mono)
   border-radius:9px;color:var(--text);font-family:var(--mono);font-size:13px;margin-bottom:10px;outline:none}
 .lbox input:focus{border-color:var(--acc)}
 .lerr{color:var(--red);font-size:11px;margin-bottom:8px}
+
+.wrap {
+      max-width: 360px;
+    margin: 0 auto 0 66%;
+    padding: 20px 18px 200px;
+}
 </style>
 </head>
 <body>
@@ -315,31 +321,62 @@ async function saveSetting(name, value) {
 // ---------------------------------------------------------------------------
 // Запуск
 // ---------------------------------------------------------------------------
+/**
+ * Запускает операцию (например, "apply_rates") для указанного клиента.
+ * Вызывается при нажатии кнопки в панели, сгенерированной через foreach по списку клиентов.
+ *
+ * @param {Object} client - Объект или идентификатор клиента (используется для формирования ID кнопки и передачи на сервер).
+ * @param {string} op - Название операции (например, 'download', 'apply_rates' и т.д.).
+ */
 async function runOp(client, op) {
+    // 1. Блокируем кнопку операции для этого клиента, чтобы предотвратить повторный запуск
     const btn = document.getElementById(`btn-${op}-${client}`);
-    if (btn) btn.disabled = true;
+    if (btn) {
+        btn.disabled = true;
+    }
 
+    // 2. Формируем данные POST-запроса
     const fd = new FormData();
     fd.append('client', client);
     fd.append('op', op);
+
+    // Для операции 'download' добавляем дополнительный параметр — количество дней для перезаписи
     if (op === 'download') {
         fd.append('rewrite_days', document.getElementById('rw-days').value);
     }
-    try {
-        const r = await fetch(`run.php?key=${encodeURIComponent(KEY)}`, {method:'POST',body:fd});
-        const j = await r.json();
-        console.log('run:', client, op, j);
-        if (j.status === 'already_running') {
-            setStLine(client, op, {status:'running'}, true);
-        }
-    } catch(e) { console.error('runOp error:', e); }
 
+    // 3. Отправляем асинхронный запрос на сервер (run.php)
+    try {
+        const r = await fetch(`run.php?key=${encodeURIComponent(KEY)}`, {
+            method: 'POST',
+            body: fd
+        });
+        const j = await r.json();
+        // console.log('run:', client, op, j);
+
+        // Если сервер сообщает, что операция уже запущена — синхронизируем состояние интерфейса
+        if (j.status === 'already_running') {
+            // Вызов функции, которая, предположительно, устанавливает строковое состояние клиента.
+            // Передаётся: client, op, объект статуса {status:'running'}, и флаг true (вероятно, принудительное обновление).
+            setStLine(client, op, { status: 'running' }, true);
+        }
+    } catch (e) {
+        console.error('runOp error:', e);
+    }
+
+    // 4. Обновляем интерфейс независимо от результата запроса (показываем кнопку Stop, запускаем опрос статуса и консоль)
+    // showStop — отображает кнопку остановки для данного клиента и операции.
     showStop(client, op);
+
+    // startPoll — начинает периодический опрос сервера для получения текущего статуса операции.
     startPoll(client, op);
+
+    // startConsole — подключает/обновляет консоль вывода для данного клиента и операции.
     startConsole(client, op);
+
+    // updateBadges — обновляет значки (бейджи) на панели клиента (например, счётчики или индикаторы).
     updateBadges();
 }
-
 async function runAll(op) {
     for (const c of CLIENTS) runOp(c, op);
 }
@@ -409,32 +446,90 @@ function updateBadges() {
 }
 
 // ---------------------------------------------------------------------------
-// Polling
+// Polling (мониторинг статуса операции через периодические запросы)
 // ---------------------------------------------------------------------------
-function startPoll(client, op) {
-    const pk = `${client}:${op}`;
-    if (pollers[pk]) clearInterval(pollers[pk]);
-    if (op==='apply_bids') { const pw=document.getElementById(`pw-${client}`); if(pw) pw.style.display='block'; }
 
+/**
+ * Запускает циклический опрос сервера для отслеживания статуса операции.
+ * Используется после вызова runOp или при возобновлении наблюдения.
+ *
+ * @param {string|Object} client - Идентификатор клиента (используется в ключе pollers и в URL)
+ * @param {string} op - Название операции ('apply_bids', 'download' и т.д.)
+ */
+function startPoll(client, op) {
+    // Уникальный ключ для хранения интервала опроса (глобальный объект pollers)
+    const pk = `${client}:${op}`;
+
+    // Если для этой пары (клиент+операция) уже есть активный опрос — останавливаем его
+    if (pollers[pk]) {
+        clearInterval(pollers[pk]);
+    }
+
+    // Специфичная логика для операции 'apply_bids': показать блок с паролем (если он существует)
+    if (op === 'apply_bids') {
+        const pw = document.getElementById(`pw-${client}`);
+        if (pw) {
+            pw.style.display = 'block';
+        }
+    }
+
+    // Запускаем новый интервал (каждые 2500 мс = 2.5 сек)
     pollers[pk] = setInterval(async () => {
         try {
-            const r = await fetch(`status.php?key=${encodeURIComponent(KEY)}&op=${op}&client=${client}&_=${Date.now()}`,{cache:'no-store'});
-            if (!r.ok) return;
+            // Запрос к status.php с параметрами: ключ, операция, клиент, и уникальный timestamp для предотвращения кэширования
+            const r = await fetch(
+                `status.php?key=${encodeURIComponent(KEY)}&op=${op}&client=${client}&_=${Date.now()}`,
+                { cache: 'no-store' }
+            );
+            if (!r.ok) return; // Если ответ не успешный — выходим, не обновляя статус
+
             const s = await r.json();
-            if (!s||!s.status) return;
-            setStLine(client, op, s, s.status==='running');
-            if (op==='apply_bids') updProg(client, s);
-            if (s.status==='done'||s.status==='error') {
-                clearInterval(pollers[pk]); delete pollers[pk];
+            console.log(s);
+            if (!s || !s.status) return; // Если ответ не содержит поле status — игнорируем
+
+            // Вызов внешней функции: обновляет отображение строки состояния для клиента/операции.
+            // Передаётся: client, op, объект статуса s, и флаг (s.status === 'running') — вероятно, для блокировки/разблокировки элементов.
+            setStLine(client, op, s, s.status === 'running');
+
+            // Для операции 'apply_bids' вызывается обновление прогресс-бара (или другого визуального элемента)
+            if (op === 'apply_bids') {
+                updProg(client, s);
+            }
+
+            // Если операция завершена (done) или произошла ошибка — останавливаем опрос и чистим интерфейс
+            if (s.status === 'done' || s.status === 'error') {
+                clearInterval(pollers[pk]);
+                delete pollers[pk];
+
+                // Скрываем кнопку Stop (предположительно, вызов hideStop)
                 hideStop(client, op);
-                const btn=document.getElementById(`btn-${op}-${client}`); if(btn) btn.disabled=false;
-                if (op==='apply_bids') { const pw=document.getElementById(`pw-${client}`); if(pw) pw.style.display='none'; }
+
+                // Находим кнопку выполнения операции и разблокируем её
+                const btn = document.getElementById(`btn-${op}-${client}`);
+                if (btn) {
+                    btn.disabled = false;
+                }
+
+                // Для 'apply_bids' скрываем блок с паролем
+                if (op === 'apply_bids') {
+                    const pw = document.getElementById(`pw-${client}`);
+                    if (pw) {
+                        pw.style.display = 'none';
+                    }
+                }
+
+                // Обновляем бейджи (например, счётчики активных операций)
                 updateBadges();
             }
-        } catch(e){}
+        } catch (e) {
+            // Ошибки сети или парсинга молча игнорируются (логирование отсутствует)
+        }
     }, 2500);
+
+    // Сразу после запуска опроса обновляем бейджи (вероятно, чтобы показать "опрос активен")
     updateBadges();
 }
+
 
 function updProg(c, s) {
     const pf=document.getElementById(`pf-${c}`), pt=document.getElementById(`pt-${c}`);

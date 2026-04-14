@@ -57,8 +57,15 @@ ROOT_URL_OUT: str = os.environ.get(
 # SQLite база данных
 DB_PATH: str = os.environ.get(
     "MNOGUNIK_DB_PATH",
-    os.path.join(ROOT_DIR, "data", "avito.db") if not IS_LOCAL
+    os.path.join(MONOREPO_ROOT, "db", "avito.db") if not IS_LOCAL
     else os.path.join(ROOT_DIR, "avito.db"),
+)
+
+# папка с конфигами баз данных
+DB_CONF: str = os.environ.get(
+    "MNOGUNIK_DB_PATH",
+    os.path.join(MONOREPO_ROOT, "db") if not IS_LOCAL
+    else os.path.join(ROOT_DIR),
 )
 
 

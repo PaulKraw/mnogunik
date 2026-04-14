@@ -1,0 +1,9 @@
+{
+  "operation": "export_stats",
+  "client": "coffee",
+  "status": "done",
+  "started_at": "2026-04-13 20:47:09",
+  "finished_at": "2026-04-13 20:47:12",
+  "rows_written": 24,
+  "error": null
+}

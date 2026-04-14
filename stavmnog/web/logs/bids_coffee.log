@@ -1,0 +1,29 @@
+Traceback (most recent call last):
+  File "/var/www/mnogunik.ru/mng/scripts/apply_bids.py", line 464, in <module>
+    main()
+  File "/var/www/mnogunik.ru/mng/scripts/apply_bids.py", line 198, in main
+    write_log(f"[apply_bids] ПРЕ СТАРТ | {args.client}")
+UnboundLocalError: local variable 'args' referenced before assignment
+[apply_bids] ПРЕ СТАРТ | 
+[apply_bids] ПРЕ СТАРТ | 
+[apply_bids] args = ap.parse_args() | Namespace(batch_size=20, client='coffee', ignore_date=False)
+[apply_bids] ПРЕ СТАРТ | 
+[apply_bids] args = ap.parse_args() | Namespace(batch_size=20, client='coffee', ignore_date=False)
+[apply_bids] key_file | /var/www/mnogunik.ru/mng/stavmnog/config/keytableamunskow.json
+[apply_bids] root_dir | /var/www/mnogunik.ru/proj
+[apply_bids] СТАРТ | coffee
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+[apply_bids] ОШИБКА | coffee | [Errno 2] No such file or directory: '/var/www/mnogunik.ru/mng/stavmnog/config/keytableamunskow.json'
+[apply_bids] ПРЕ СТАРТ | 
+[apply_bids] key_file | /var/www/mnogunik.ru/mng/db/config/keytableamunskow.json
+[apply_bids] СТАРТ | coffee
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/scripts/apply_bids.py:106: DeprecationWarning: The order of arguments in worksheet.update() has changed. Please pass values first and range_name secondor used named arguments (range_name=, values=)
+  ws.update(f"A1:{last}1", [header])
+[apply_bids] ГОТОВО | coffee | OK:0 ERR:0

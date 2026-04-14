@@ -1,0 +1,26 @@
+Traceback (most recent call last):
+  File "/var/www/mnogunik.ru/mng/scripts/download.py", line 18, in <module>
+    from shared.config import DB_PATH
+ModuleNotFoundError: No module named 'shared'
+Traceback (most recent call last):
+  File "/var/www/mnogunik.ru/mng/scripts/download.py", line 18, in <module>
+    from shared.config import DB_PATH
+ModuleNotFoundError: No module named 'shared'
+2026-04-09 18:29:38 [WARNING] download coffee уже запущен (pid=148506)
+2026-04-09 18:29:38 [WARNING] download coffee уже запущен (pid=148506)
+2026-04-12 23:32:55 [WARNING] download coffee уже запущен (pid=191310)
+2026-04-12 23:32:55 [WARNING] download coffee уже запущен (pid=191310)
+2026-04-13 00:35:44 [INFO] ==================================================
+2026-04-13 00:35:44 [INFO] ==================================================
+2026-04-13 00:35:44 [INFO] СТАРТ | download | coffee | pid=1236
+2026-04-13 00:35:44 [INFO] СТАРТ | download | coffee | pid=1236
+2026-04-13 00:35:44 [INFO] ==================================================
+2026-04-13 00:35:44 [INFO] ==================================================
+2026-04-13 00:35:44 [INFO] Токен Авито получен
+2026-04-13 00:35:44 [INFO] Токен Авито получен
+2026-04-13 00:35:44 [INFO] Последняя дата в БД: 2026-04-08, перезапись 1 дн с 2026-04-08
+2026-04-13 00:35:44 [INFO] Последняя дата в БД: 2026-04-08, перезапись 1 дн с 2026-04-08
+2026-04-13 00:35:44 [INFO] [1/6] 2026-04-08
+2026-04-13 00:35:44 [INFO] [1/6] 2026-04-08
+2026-04-13 00:35:45 [WARNING] 429 rate limit — ждём 65 сек
+2026-04-13 00:35:45 [WARNING] 429 rate limit — ждём 65 сек

@@ -1,0 +1,17 @@
+{
+  "ts": 1776118736.770217,
+  "today": "14.04",
+  "status": "done",
+  "total": 29,
+  "overall": {
+    "taken": 0,
+    "done": 0,
+    "ok": 0,
+    "err": 0,
+    "skip": 0
+  },
+  "by_client": {},
+  "current": {
+    "state": "done"
+  }
+}

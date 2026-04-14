@@ -13,7 +13,7 @@ import sqlite3
 import time
 from datetime import datetime
 
-from shared.config import DB_PATH
+from shared.config import DB_PATH, DB_CONF
 from shared.google_sheets import get_gspread_client
 from shared.logger import get_logger
 
@@ -125,8 +125,7 @@ def run(client_key: str):
     })
 
     cfg = get_client_config(client_key)
-    from stavmnog.config import STAVMNOG_DIR
-    key_file = os.path.join(STAVMNOG_DIR, cfg["google_key_file"])
+    key_file = os.path.join(DB_CONF, cfg["google_key_file"])
 
     logger.info(f"Подключение к Google Sheets: {cfg['sheet_id']}")
     ws = _open_sheet(cfg["sheet_id"], cfg["sheet_bids"], key_file)

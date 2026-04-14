@@ -20,7 +20,7 @@ CONFIG_DIR   = os.path.join(MONOREPO_ROOT, "db//config")
 STATUS_DIR   = os.path.join(STAVMNOG_DIR, "web/status")
 LOG_DIR      = os.path.join(STAVMNOG_DIR, "web/logs")
 
-CLIENTS_JSON = os.path.join(MONOREPO_ROOT, "/db//config/clients.json")
+CLIENTS_JSON = os.path.join(MONOREPO_ROOT, "db", "config", "clients.json")
 
 
 

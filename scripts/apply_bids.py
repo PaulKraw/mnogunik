@@ -19,7 +19,7 @@ from typing import Optional
 import pandas as pd
 import requests
 
-from shared.config import ROOT_DIR
+from shared.config import ROOT_DIR, DB_PATH, DB_CONF
 from shared.avito_api import get_avito_token, avito_get, avito_post
 from shared.logger import write_log
 
@@ -195,6 +195,8 @@ def parse_limit_penny(raw) -> Optional[int]:
 # ═══════════════════════════════════════════
 
 def main():
+    write_log(f"[apply_bids] ПРЕ СТАРТ | ")
+
     ap = argparse.ArgumentParser(description="Применение ставок Авито из Google Sheets")
     ap.add_argument("--client", required=True, help="Ключ клиента из clients.json")
     ap.add_argument("--batch-size", type=int, default=BATCH_SIZE)
@@ -202,18 +204,23 @@ def main():
                     help="Очистить 'дата применения' перед стартом")
     args = ap.parse_args()
 
+
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(STATUS_DIR, exist_ok=True)
 
-    if not acquire_lock("bids", args.client):
-        return
+    # if not acquire_lock("bids", args.client):
+    #     return
 
     cfg = get_client_config(args.client)
     sheet_id = cfg["sheet_id"]
     gid = cfg.get("sheet_bids_gid", 0)
-    key_file = os.path.join(STAVMNOG_DIR, cfg["google_key_file"])
-    root_dir = os.environ.get("MNOGUNIK_ROOT_DIR", ROOT_DIR)
+    key_file = os.path.join(DB_CONF, cfg["google_key_file"])
 
+    
+    write_log(f"[apply_bids] key_file | {key_file}")
+
+
+    #вот где же он не отчитывается но работает? 
     status_path = os.path.join(STATUS_DIR, f"bids_{args.client}.json")
     failed_path = os.path.join(
         STATUS_DIR, f"failed_ids_{args.client}_{datetime.now().strftime('%Y-%m-%d')}.json"
@@ -308,42 +315,14 @@ def main():
                 batch_ok = batch_err = batch_skip = batch_done = 0
 
                 for (name, name_csv), items in groups.items():
-                    # API-ключи клиента
-                    api_path = os.path.join(root_dir, "proj", name, "var", "api.json")
-                    if not os.path.exists(api_path):
-                        for rec, kind in items:
-                            rn = rec["__row__"]
-                            updates += [
-                                {"range": f"{col_letter(hdr_idx['Статус'])}{rn}", "values": [["ERR"]]},
-                                {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [["no api.json"]]},
-                                {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[today_dm]]},
-                            ]
-                            batch_err += 1
-                            failed_ids.append(str(rec.get("AvitoId", "")).strip())
-                        continue
+                    # API-ключи клиента в априори есть в конфиге. Если их нет, то это баг в конфиге, а не в данных листа, и лучше падать с ошибкой, чем молча пропускать.
 
-                    try:
-                        with open(api_path, "r", encoding="utf-8") as f:
-                            api = json.load(f)
-                        if name_csv not in api:
-                            raise KeyError(f"no '{name_csv}' in api.json")
-                        client_id = api[name_csv]["CLIENT_ID"]
-                        client_secret = api[name_csv]["CLIENT_SECRET"]
-                    except Exception as e:
-                        for rec, kind in items:
-                            rn = rec["__row__"]
-                            updates += [
-                                {"range": f"{col_letter(hdr_idx['Статус'])}{rn}", "values": [["ERR"]]},
-                                {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [[str(e)[:200]]]},
-                                {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[today_dm]]},
-                            ]
-                            batch_err += 1
-                        continue
 
-                    # Токен (кеш на батч)
+                    # Токен (кеш на батч) я придумал что лучше
                     token = token_cache.get((name, name_csv))
                     if not token:
-                        token = get_avito_token(client_id, client_secret)
+                        token = get_avito_token(cfg["client_id"], cfg["client_secret"])
+                        
                         token_cache[(name, name_csv)] = token
 
                     for rec, kind in items:
