@@ -196,7 +196,7 @@ button,.btn{cursor:pointer;border:none;border-radius:7px;font-family:var(--mono)
     <span style="color:var(--muted);font-size:11px">ВСЕ:</span>
     <button class="btn btn-a" onclick="runAll('download')">↓ Скачать стат.</button>
     <button class="btn btn-a" onclick="runAll('build_export')">≡ Аналитика + Sheets</button>
-    <button class="btn btn-a" onclick="runAll('apply_bids')">▶ Применить ставки</button>
+    <button class="btn btn-a" onclick="runAll('bids')">▶ Применить ставки</button>
     <div class="sep-v"></div>
     <button class="btn btn-stop-all" onclick="stopAll()">■ СТОП ВСЁ</button>
     <div class="active-info" id="act-info">нет активных процессов</div>
@@ -268,10 +268,10 @@ button,.btn{cursor:pointer;border:none;border-radius:7px;font-family:var(--mono)
 
       <div class="op">
         <button class="btn-r y" id="btn-apply_bids-<?= $ckey ?>"
-                onclick="runOp('<?= $ckey ?>','apply_bids')"
+                onclick="runOp('<?= $ckey ?>','bids')"
                 <?= $bi_on ? 'disabled' : '' ?>>▶ Применить ставки</button>
-        <button class="btn-s" id="stop-apply_bids-<?= $ckey ?>"
-                onclick="stopOp('<?= $ckey ?>','apply_bids')"
+        <button class="btn-s" id="stop-bids-<?= $ckey ?>"
+                onclick="stopOp('<?= $ckey ?>','bids')"
                 style="<?= $bi_on?'display:block':'' ?>">■ Стоп</button>
         <div class="stl" id="st-<?= $ckey ?>-apply_bids"><?php stRender($st_bi,$bi_on) ?></div>
         <div class="pw" id="pw-<?= $ckey ?>" style="<?= $bi_on?'display:block':'' ?>">
@@ -302,8 +302,8 @@ button,.btn{cursor:pointer;border:none;border-radius:7px;font-family:var(--mono)
 <script>
 const KEY     = '<?= htmlspecialchars(ACCESS_KEY) ?>';
 const CLIENTS = <?= json_encode(array_keys(array_filter($clients, fn($c)=>!empty($c['active'])))) ?>;
-const OPS     = ['download','build_export','apply_bids'];
-const OP_LABELS = {download:'скачивание', build_export:'аналитика', apply_bids:'ставки'};
+const OPS     = ['download','build_export','bids'];
+const OP_LABELS = {download:'скачивание', build_export:'аналитика', bids:'ставки'};
 const pollers = {};
 
 // ---------------------------------------------------------------------------
@@ -474,7 +474,7 @@ function startPoll(client, op) {
     }
     console.groupEnd();
 
-    if (op === 'apply_bids') {
+    if (op === 'bids') {
         const pw = document.getElementById(`pw-${client}`);
         if (pw) pw.style.display = 'block';
     }
@@ -501,7 +501,7 @@ function startPoll(client, op) {
             console.log(`[POLL ${pk}] status=${s.status}`, s);
             setStLine(client, op, s, s.status === 'running');
             
-            if (op === 'apply_bids') {
+            if (op === 'bids') {
                 updProg(client, s);
                 if (s.overall) {
                     console.log(`[BIDS ${client}] taken=${s.overall.taken} done=${s.overall.done} ok=${s.overall.ok} err=${s.overall.err} skip=${s.overall.skip}`);
@@ -516,7 +516,7 @@ function startPoll(client, op) {
                 hideStop(client, op);
                 const btn = document.getElementById(`btn-${op}-${client}`);
                 if (btn) btn.disabled = false;
-                if (op === 'apply_bids') {
+                if (op === 'bids') {
                     const pw = document.getElementById(`pw-${client}`);
                     if (pw) pw.style.display = 'none';
                 }
@@ -579,7 +579,7 @@ document.addEventListener('DOMContentLoaded', () => {
     <?php foreach ($clients as $ckey => $cfg): if (empty($cfg['active'])) continue;
         if (is_alive('download',    $ckey)) echo "startPoll('$ckey','download');startConsole('$ckey','download');\n";
         if (is_alive('build_stats', $ckey)) echo "startPoll('$ckey','build_export');startConsole('$ckey','build_export');\n";
-        if (is_alive('bids',        $ckey)) echo "startPoll('$ckey','apply_bids');startConsole('$ckey','apply_bids');\n";
+        if (is_alive('bids',        $ckey)) echo "startPoll('$ckey','bids');startConsole('$ckey','bids');\n";
     endforeach; ?>
     updateBadges();
 });

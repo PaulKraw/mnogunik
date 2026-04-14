@@ -18,9 +18,9 @@ from shared.config import DB_PATH, DB_CONF
 from shared.google_sheets import get_gspread_client
 from shared.logger import get_logger
 
-from stavmnog.config import get_client_config, COL, STATUS_DIR, LOG_DIR
+from stavmnog.config import get_client_config, STATUS_DIR, LOG_DIR, SHEET_COLUMNS
 from stavmnog.utils.pid_lock import acquire_lock, release_lock
-from stavmnog.utils.formulas import calc_bid, safe_float, col_letter, norm_avito_id
+from stavmnog.utils.formulas import calc_bid, safe_float, col_letter, norm_avito_id, build_header_index
 
 SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -131,20 +131,18 @@ def run(client_key: str):
     logger.info(f"Подключение к Google Sheets: {cfg['sheet_id']}")
     ws = _open_sheet(cfg["sheet_id"], cfg["sheet_bids"], key_file)
 
-    _ensure_columns(ws, logger)
+    hdr_idx = build_header_index(ws, SHEET_COLUMNS, logger=logger)
 
     all_rows = ws.get_all_values()
     header = all_rows[0] if all_rows else []
     data_rows = all_rows[1:]
     logger.info(f"Строк в листе: {len(data_rows)}")
 
-    # Индекс AvitoId → номер строки
-    avito_col = COL["AvitoId"] - 1
+    avito_col_0 = hdr_idx["AvitoId"] - 1    # ← вместо COL["AvitoId"] - 1
     sheet_index = {}
-    sheet_rows_bad = []  # строки с невалидным AvitoId
-
+    sheet_rows_bad = []
     for i, row in enumerate(data_rows):
-        raw = str(row[avito_col]).strip() if avito_col < len(row) else ""
+        raw = row[avito_col_0] if avito_col_0 < len(row) else ""
         clean = norm_avito_id(raw)
         sheet_row = i + 2
         if not clean:
@@ -195,9 +193,9 @@ def run(client_key: str):
         if only_sheet:
             logger.info(f"В листе есть, в БД НЕТ (первые 5): {list(only_sheet)[:5]}")
 
-        minn_col = COL["мин"] - 1
-        maxx_col = COL["макс"] - 1
-        koret_col = COL["корект"] - 1
+        minn_col  = hdr_idx["мин"] - 1
+        maxx_col  = hdr_idx["макс"] - 1
+        koret_col = hdr_idx["корект"] - 1
 
         updates = []
         bid_code_updates = []
@@ -205,8 +203,9 @@ def run(client_key: str):
         rows_zeroed = 0  # не нашли в БД — ставим нули
         rows_marked = 0  # невалидный AvitoId — ставим маркер
 
-        def cell(col_idx, sheet_row, value):
-            return {"range": f"{col_letter(col_idx)}{sheet_row}", "values": [[value]]}
+        def cell(col_name, sheet_row, value):
+            return {"range": f"{col_letter(hdr_idx[col_name])}{sheet_row}",
+                    "values": [[value]]}
 
         # 1) Проходим по всем валидным строкам листа
         for avito_id, sheet_row in sheet_index.items():
@@ -228,16 +227,16 @@ def run(client_key: str):
                 bid_code_updates.append((bid_code, int(avito_id), client_key))
 
                 updates += [
-                    cell(COL["pct_7d"], sheet_row, round(ctr_7d, 4)),
-                    cell(COL["cpl_7d"], sheet_row, round(s["cpl_7d"] or 0, 2)),
-                    cell(COL["clicks_7d"], sheet_row, views_7d),
-                    cell(COL["leads_7d"], sheet_row, contacts_7d),
-                    cell(COL["pct_prev"], sheet_row, round(s["ctr_prev"] or 0, 4)),
-                    cell(COL["cpl_prev"], sheet_row, round(s["cpl_prev"] or 0, 2)),
-                    cell(COL["clicks_prev"], sheet_row, s["views_prev"] or 0),
-                    cell(COL["leads_prev"], sheet_row, s["contacts_prev"] or 0),
-                    cell(COL["bid_code"], sheet_row, bid_code),
-                    cell(COL["limit_code"], sheet_row,
+                    cell("%",          sheet_row, round(ctr_7d, 4)),
+                    cell("ц лид",      sheet_row, round(s["cpl_7d"] or 0, 2)),
+                    cell("клики",      sheet_row, views_7d),
+                    cell("лид",        sheet_row, contacts_7d),
+                    cell("% пред",     sheet_row, round(s["ctr_prev"] or 0, 4)),
+                    cell("ц лид пред", sheet_row, round(s["cpl_prev"] or 0, 2)),
+                    cell("клики пред", sheet_row, s["views_prev"] or 0),
+                    cell("лид пред",   sheet_row, s["contacts_prev"] or 0),
+                    cell("ставка из кода", sheet_row, bid_code),
+                    cell("лимит из кода",  sheet_row,
                         s["limit_code"] if s["limit_code"] is not None else ""),
                 ]
                 rows_written += 1
@@ -245,22 +244,22 @@ def run(client_key: str):
                 # AvitoId есть в листе, но в БД нет данных — ставим нули
                 bid_code = calc_bid(minn, maxx, prev_bid, 0, 0, 0)
                 updates += [
-                    cell(COL["pct_7d"], sheet_row, 0),
-                    cell(COL["cpl_7d"], sheet_row, 0),
-                    cell(COL["clicks_7d"], sheet_row, 0),
-                    cell(COL["leads_7d"], sheet_row, 0),
-                    cell(COL["pct_prev"], sheet_row, 0),
-                    cell(COL["cpl_prev"], sheet_row, 0),
-                    cell(COL["clicks_prev"], sheet_row, 0),
-                    cell(COL["leads_prev"], sheet_row, 0),
-                    cell(COL["bid_code"], sheet_row, bid_code),
-                    cell(COL["limit_code"], sheet_row, ""),
+                    cell("%",          sheet_row, 0),
+                    cell("ц лид",      sheet_row, 0),
+                    cell("клики",      sheet_row, 0),
+                    cell("лид",        sheet_row, 0),
+                    cell("% пред",     sheet_row, 0),
+                    cell("ц лид пред", sheet_row, 0),
+                    cell("клики пред", sheet_row, 0),
+                    cell("лид пред",   sheet_row, 0),
+                    cell("ставка из кода", sheet_row, bid_code),
+                    cell("лимит из кода",  sheet_row, ""),
                 ]
                 rows_zeroed += 1
 
         # 2) Строки с битым/пустым AvitoId — помечаем в колонке Сообщение
         for sheet_row, raw in sheet_rows_bad:
-            updates.append(cell(COL["Сообщение"], sheet_row, "нет AvitoId"))
+            updates.append(cell("Сообщение", sheet_row, "нет AvitoId"))
             rows_marked += 1
 
         logger.info(

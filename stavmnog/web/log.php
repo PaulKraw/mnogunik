@@ -31,7 +31,7 @@ $map = [
     'build_export' => "build_export_{$client}.log",
     'build_stats'  => "build_stats_{$client}.log",
     'export'       => "export_{$client}.log",
-    'apply_bids'   => "bids_{$client}.log",
+    'bids'   => "bids_{$client}.log",
 ];
 $filename = $map[$op] ?? null;
 if (!$filename) { echo '[]'; exit; }

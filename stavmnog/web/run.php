@@ -65,7 +65,7 @@ switch ($op) {
         @unlink($status_dir . "/stop_download_{$client}.flag");
         break;
 
-    case 'apply_bids':
+    case 'bids':
         $op_key = 'bids';
         $script = MONOREPO_ROOT . '/scripts/apply_bids.py';
         $args = "--client=" . escapeshellarg($client);

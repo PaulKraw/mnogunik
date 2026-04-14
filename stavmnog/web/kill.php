@@ -23,7 +23,7 @@ if (!$client || !$op) { echo '{"error":"params required"}'; exit; }
 $op_key_map = [
     'download'     => 'download',
     'build_export' => 'build_stats',
-    'apply_bids'   => 'bids',
+    'bids'   => 'bids',
 ];
 $op_key  = $op_key_map[$op] ?? $op;
 $pid_file = STATUS_DIR . "/{$op_key}_{$client}.pid";

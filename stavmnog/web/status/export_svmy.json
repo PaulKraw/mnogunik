@@ -1,0 +1,9 @@
+{
+  "operation": "export_stats",
+  "client": "svmy",
+  "status": "done",
+  "started_at": "2026-04-14 17:46:59",
+  "finished_at": "2026-04-14 17:47:07",
+  "rows_written": 0,
+  "error": null
+}

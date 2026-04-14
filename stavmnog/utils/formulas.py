@@ -113,3 +113,34 @@ def norm_avito_id(raw) -> str:
         return str(int(s))
     except ValueError:
         return ""
+    
+
+
+
+def build_header_index(ws, required_columns, logger=None):
+    """
+    Возвращает {имя_колонки: 1-based_индекс} для указанных имён.
+    Если какой-то колонки в листе нет — добавляет её в конец шапки.
+    Имена сравниваются после strip() — пробелы по краям не ломают.
+
+    Args:
+        ws: gspread Worksheet.
+        required_columns: список имён колонок которые должны быть.
+        logger: опционально для вывода.
+
+    Returns:
+        Dict[str, int] — имя → позиция (1-based).
+    """
+    header = [h.strip() for h in ws.row_values(1)]
+    added = []
+    for name in required_columns:
+        if name not in header:
+            header.append(name)
+            added.append(name)
+    if added:
+        from stavmnog.utils.formulas import col_letter
+        last = col_letter(len(header))
+        ws.update(f"A1:{last}1", [header])
+        if logger:
+            logger.info(f"В шапку добавлены колонки: {added}")
+    return {name: i + 1 for i, name in enumerate(header)}

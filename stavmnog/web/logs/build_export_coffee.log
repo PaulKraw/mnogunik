@@ -18,3 +18,107 @@
 2026-04-14 15:21:06 [INFO]   Записано 350 / 350
 2026-04-14 15:21:06 [INFO] bid_code обновлён в БД: 24
 2026-04-14 15:21:06 [INFO] ГОТОВО | export_stats | coffee | 24 строк
+2026-04-14 15:59:14 [WARNING] build_stats coffee уже запущен (pid=19654)
+2026-04-14 15:59:15 [INFO] ==================================================
+2026-04-14 15:59:15 [INFO] СТАРТ | export_stats | coffee
+2026-04-14 15:59:15 [INFO] ==================================================
+2026-04-14 15:59:15 [INFO] Подключение к Google Sheets: 1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+2026-04-14 15:59:17 [INFO] Строк в листе: 35
+2026-04-14 15:59:17 [INFO] AvitoId в листе: валидных=35, пустых/битых=0
+2026-04-14 15:59:17 [INFO] Примеры ключей (первые 5): ['7811815861', '8035421536', '8035200292', '8034979055', '8034933626']
+2026-04-14 15:59:18 [INFO] Аналитика в БД: всего=27, с валидным id=27
+2026-04-14 15:59:18 [INFO] В обоих: 24 | только БД: 3 | только лист: 11
+2026-04-14 15:59:18 [INFO] В БД есть, в листе НЕТ (первые 5): ['7938931585', '8003143707', '7843085197']
+2026-04-14 15:59:18 [INFO] В листе есть, в БД НЕТ (первые 5): ['8035139496', '8035271871', '8035216048', '8035114736', '8034977708']
+2026-04-14 15:59:18 [INFO] Запись: c данными=24, нулями=11, без AvitoId=0, всего ячеек=350
+2026-04-14 15:59:18 [INFO]   Записано 350 / 350
+2026-04-14 15:59:18 [INFO] bid_code обновлён в БД: 24
+2026-04-14 15:59:18 [INFO] ГОТОВО | export_stats | coffee | 24 строк
+2026-04-14 16:20:39 [WARNING] build_stats coffee уже запущен (pid=19931)
+2026-04-14 16:20:40 [INFO] ==================================================
+2026-04-14 16:20:40 [INFO] СТАРТ | export_stats | coffee
+2026-04-14 16:20:40 [INFO] ==================================================
+2026-04-14 16:20:40 [INFO] Подключение к Google Sheets: 1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+2026-04-14 16:20:42 [INFO] Строк в листе: 35
+2026-04-14 16:20:42 [INFO] AvitoId в листе: валидных=35, пустых/битых=0
+2026-04-14 16:20:42 [INFO] Примеры ключей (первые 5): ['7811815861', '8035421536', '8035200292', '8034979055', '8034933626']
+2026-04-14 16:20:42 [INFO] Аналитика в БД: всего=27, с валидным id=27
+2026-04-14 16:20:42 [INFO] В обоих: 24 | только БД: 3 | только лист: 11
+2026-04-14 16:20:42 [INFO] В БД есть, в листе НЕТ (первые 5): ['8003143707', '7843085197', '7938931585']
+2026-04-14 16:20:42 [INFO] В листе есть, в БД НЕТ (первые 5): ['8035421536', '8034977708', '8035200292', '8035848846', '8035605379']
+2026-04-14 16:20:42 [INFO] Запись: c данными=24, нулями=11, без AvitoId=0, всего ячеек=350
+2026-04-14 16:20:42 [INFO]   Записано 350 / 350
+2026-04-14 16:20:42 [INFO] bid_code обновлён в БД: 24
+2026-04-14 16:20:42 [INFO] ГОТОВО | export_stats | coffee | 24 строк
+2026-04-14 16:34:30 [WARNING] build_stats coffee уже запущен (pid=20097)
+2026-04-14 16:34:30 [INFO] ==================================================
+2026-04-14 16:34:30 [INFO] СТАРТ | export_stats | coffee
+2026-04-14 16:34:30 [INFO] ==================================================
+2026-04-14 16:34:30 [INFO] Подключение к Google Sheets: 1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+2026-04-14 16:34:33 [INFO] Строк в листе: 35
+2026-04-14 16:34:33 [INFO] AvitoId в листе: валидных=35, пустых/битых=0
+2026-04-14 16:34:33 [INFO] Примеры ключей (первые 5): ['7811815861', '8035421536', '8035200292', '8034979055', '8034933626']
+2026-04-14 16:34:33 [INFO] Аналитика в БД: всего=27, с валидным id=27
+2026-04-14 16:34:33 [INFO] В обоих: 24 | только БД: 3 | только лист: 11
+2026-04-14 16:34:33 [INFO] В БД есть, в листе НЕТ (первые 5): ['7938931585', '7843085197', '8003143707']
+2026-04-14 16:34:33 [INFO] В листе есть, в БД НЕТ (первые 5): ['8035594859', '8035216048', '8035271871', '8035605379', '8035848846']
+2026-04-14 16:34:33 [INFO] Запись: c данными=24, нулями=11, без AvitoId=0, всего ячеек=350
+2026-04-14 16:34:33 [INFO]   Записано 350 / 350
+2026-04-14 16:34:33 [INFO] bid_code обновлён в БД: 24
+2026-04-14 16:34:33 [INFO] ГОТОВО | export_stats | coffee | 24 строк
+2026-04-14 17:59:49 [WARNING] build_stats coffee уже запущен (pid=1791)
+2026-04-14 17:59:50 [INFO] ==================================================
+2026-04-14 17:59:50 [INFO] СТАРТ | export_stats | coffee
+2026-04-14 17:59:50 [INFO] ==================================================
+2026-04-14 17:59:50 [INFO] Подключение к Google Sheets: 1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+2026-04-14 17:59:52 [INFO] Строк в листе: 128
+2026-04-14 17:59:52 [INFO] AvitoId в листе: валидных=126, пустых/битых=0
+2026-04-14 17:59:52 [INFO] Примеры ключей (первые 5): ['7811815861', '8035421536', '8035200292', '8034979055', '8034933626']
+2026-04-14 17:59:52 [INFO] Аналитика в БД: всего=27, с валидным id=27
+2026-04-14 17:59:52 [INFO] В обоих: 24 | только БД: 3 | только лист: 102
+2026-04-14 17:59:52 [INFO] В БД есть, в листе НЕТ (первые 5): ['7938931585', '8003143707', '7843085197']
+2026-04-14 17:59:52 [INFO] В листе есть, в БД НЕТ (первые 5): ['8035730362', '8034989645', '8035269543', '8035768405', '8035839058']
+2026-04-14 17:59:52 [INFO] Запись: c данными=24, нулями=102, без AvitoId=0, всего ячеек=1260
+2026-04-14 17:59:52 [INFO]   Записано 500 / 1260
+2026-04-14 17:59:53 [INFO]   Записано 1000 / 1260
+2026-04-14 17:59:53 [INFO]   Записано 1260 / 1260
+2026-04-14 17:59:53 [INFO] bid_code обновлён в БД: 24
+2026-04-14 17:59:53 [INFO] ГОТОВО | export_stats | coffee | 24 строк
+2026-04-14 18:00:56 [WARNING] build_stats coffee уже запущен (pid=1797)
+2026-04-14 18:00:57 [INFO] ==================================================
+2026-04-14 18:00:57 [INFO] СТАРТ | export_stats | coffee
+2026-04-14 18:00:57 [INFO] ==================================================
+2026-04-14 18:00:57 [INFO] Подключение к Google Sheets: 1T85zbvt2ltpSCprGPnJQ0QhLkQ6l-cCpbZd2Uh6wgWM
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/auth/__init__.py:52: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+/var/www/mnogunik.ru/mng/.venv/lib/python3.8/site-packages/google/oauth2/__init__.py:38: FutureWarning: You are using a Python version 3.8 past its end of life. Google will update google-auth with critical bug fixes on a best-effort basis, but not with any other fixes or features. Please upgrade your Python version, and then update google-auth.
+  warnings.warn(eol_message.format("3.8"), FutureWarning)
+2026-04-14 18:00:59 [INFO] Строк в листе: 128
+2026-04-14 18:00:59 [INFO] AvitoId в листе: валидных=126, пустых/битых=0
+2026-04-14 18:00:59 [INFO] Примеры ключей (первые 5): ['7811815861', '8035421536', '8035200292', '8034979055', '8034933626']
+2026-04-14 18:00:59 [INFO] Аналитика в БД: всего=27, с валидным id=27
+2026-04-14 18:00:59 [INFO] В обоих: 24 | только БД: 3 | только лист: 102
+2026-04-14 18:00:59 [INFO] В БД есть, в листе НЕТ (первые 5): ['7938931585', '7843085197', '8003143707']
+2026-04-14 18:00:59 [INFO] В листе есть, в БД НЕТ (первые 5): ['8035329037', '8035736535', '8035066842', '8035044115', '8035361466']
+2026-04-14 18:00:59 [INFO] Запись: c данными=24, нулями=102, без AvitoId=0, всего ячеек=1260
+2026-04-14 18:01:00 [INFO]   Записано 500 / 1260
+2026-04-14 18:01:00 [INFO]   Записано 1000 / 1260
+2026-04-14 18:01:00 [INFO]   Записано 1260 / 1260
+2026-04-14 18:01:00 [INFO] bid_code обновлён в БД: 24
+2026-04-14 18:01:00 [INFO] ГОТОВО | export_stats | coffee | 24 строк

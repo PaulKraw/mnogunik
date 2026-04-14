@@ -97,6 +97,12 @@ def run(client_key: str):
 
         if not rows:
             logger.warning("Нет данных — запусти download.py")
+            _write_status(client_key, {
+                "operation": "build_stats", "client": client_key,
+                "status": "done", "started_at": started_at,
+                "finished_at": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "items_processed": 0, "error": "нет данных в item_stats",
+            })
             return
 
         now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

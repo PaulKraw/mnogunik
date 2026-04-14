@@ -169,8 +169,8 @@ def run(client_key: str, force_days=None, rewrite_days=None):
         os.path.join(LOG_DIR, f"download_{client_key}.log"),
     )
 
-    # if not acquire_lock("download", client_key, logger):
-    #     return
+    if not acquire_lock("download", client_key, logger):
+        return
 
     logger.info("=" * 50)
     logger.info(f"СТАРТ | download | {client_key} | pid={os.getpid()}")

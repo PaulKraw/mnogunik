@@ -40,3 +40,15 @@
 2026-04-14 15:04:31 [INFO]   -> 61 объявл | 409.20 руб
 2026-04-14 15:04:31 [INFO] ГОТОВО | coffee | строк: 361 | 2719.80 руб
 2026-04-14 15:04:31 [INFO] ГОТОВО | coffee | строк: 361 | 2719.80 руб
+2026-04-14 15:58:26 [WARNING] download coffee уже запущен (pid=19631)
+2026-04-14 15:58:26 [WARNING] download coffee уже запущен (pid=19631)
+2026-04-14 15:58:58 [WARNING] download coffee уже запущен (pid=19648)
+2026-04-14 15:58:58 [WARNING] download coffee уже запущен (pid=19648)
+2026-04-14 15:59:06 [WARNING] download coffee уже запущен (pid=19652)
+2026-04-14 15:59:06 [WARNING] download coffee уже запущен (pid=19652)
+2026-04-14 17:59:06 [WARNING] download coffee уже запущен (pid=1787)
+2026-04-14 17:59:06 [WARNING] download coffee уже запущен (pid=1787)
+2026-04-14 17:59:36 [WARNING] download coffee уже запущен (pid=1789)
+2026-04-14 17:59:36 [WARNING] download coffee уже запущен (pid=1789)
+2026-04-14 18:00:50 [WARNING] download coffee уже запущен (pid=1795)
+2026-04-14 18:00:50 [WARNING] download coffee уже запущен (pid=1795)

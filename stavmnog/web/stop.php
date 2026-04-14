@@ -20,7 +20,7 @@ if (!$client) { echo '{"error":"client required"}'; exit; }
 $flags = [
     'download'     => "stop_download_{$client}.flag",
     'build_export' => "stop_build_{$client}.flag",
-    'apply_bids'   => "stop_bids_{$client}.flag",
+    'bids'   => "stop_bids_{$client}.flag",
 ];
 
 $created = [];
