@@ -110,7 +110,6 @@ def fetch_stats_for_date(token: str, user_id: str, date_str: str, logger) -> lis
 
 def get_period(conn, client_key, force_days, logger, rewrite_days=None):
     today = datetime.now().date()
-
     if force_days:
         date_from = today - timedelta(days=force_days - 1)
         logger.info(f"Принудительный режим: последние {force_days} дней")
@@ -124,12 +123,15 @@ def get_period(conn, client_key, force_days, logger, rewrite_days=None):
     if last_date is None:
         date_from = today - timedelta(days=29)
         logger.info("Первый запуск — качаем последние 30 дней")
-    else:
-        last = datetime.strptime(last_date, "%Y-%m-%d").date()
-        rw = max(1, int(rewrite_days or REWRITE_LAST_DAYS))
-        date_from = last - timedelta(days=rw - 1)
-        logger.info(f"Последняя дата в БД: {last_date}, перезапись {rw} дн с {date_from}")
+        return str(date_from), str(today)
 
+    last = datetime.strptime(last_date, "%Y-%m-%d").date()
+    rw = max(1, int(rewrite_days or REWRITE_LAST_DAYS))
+    rewrite_start = today - timedelta(days=rw - 1)
+    date_from = min(last, rewrite_start)
+
+    days = (today - date_from).days + 1
+    logger.info(f"last={last} rw={rw} → качаем {date_from}..{today} ({days} дн)")
     return str(date_from), str(today)
 
 
@@ -169,8 +171,8 @@ def run(client_key: str, force_days=None, rewrite_days=None):
         os.path.join(LOG_DIR, f"download_{client_key}.log"),
     )
 
-    if not acquire_lock("download", client_key, logger):
-        return
+    # if not acquire_lock("download", client_key, logger):
+    #     return
 
     logger.info("=" * 50)
     logger.info(f"СТАРТ | download | {client_key} | pid={os.getpid()}")

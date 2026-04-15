@@ -92,29 +92,34 @@ def col_letter(n: int) -> str:
     return s
 
 
-def norm_avito_id(raw) -> str:
+def norm_avito_id(raw):
     """
-    Приводит AvitoId к канонической строковой форме.
-    Обрабатывает: пробелы, апострофы, запятые, scientific notation, float с .0.
-    Возвращает пустую строку если не удалось распознать.
+    Приводит AvitoId к строковому виду целого числа (без дробной части).
+    Примеры:
+        12345 -> "12345"
+        12345.0 -> "12345"
+        "12345" -> "12345"
+        "12345.0" -> "12345"
+        "12 345" -> "12345"
+        "12345abc" -> "12345"
+        None, "", "none" -> ""
     """
     if raw is None:
         return ""
-    s = str(raw).strip().replace("'", "").replace(" ", "").replace(",", "")
-    if not s or s.lower() in ("none", "nan", "avitoid", "null"):
+    s = str(raw).strip()
+    if s == "" or s.lower() in ("none", "null", "nan"):
         return ""
-    # scientific notation или float
-    if "e" in s.lower() or "." in s:
-        try:
-            return str(int(float(s)))
-        except (ValueError, OverflowError):
-            return ""
-    # чистое целое в строке
+    # Оставляем только цифры (и минус на случай отрицательных, но в AvitoId минуса нет)
+    import re
+    digits = re.sub(r"[^\d-]", "", s)
+    if not digits:
+        return ""
     try:
-        return str(int(s))
-    except ValueError:
+        # Преобразуем в целое число (отбрасывает дробную часть)
+        integer_value = int(float(digits))
+        return str(integer_value)
+    except (ValueError, TypeError):
         return ""
-    
 
 # ═══════════════════════════════════════════
 # GOOGLE SHEETS — ОТКРЫТИЕ ЛИСТА

@@ -54,15 +54,15 @@ def run(client_key: str):
 
     try:
         today = datetime.now().date()
-        period_from = today - timedelta(days=6)
+        period_from = today - timedelta(days=6)   # 7 дней включая сегодня
         period_to = today
-        prev_from = today - timedelta(days=13)
+        prev_from = today - timedelta(days=13)    # предыдущие 7 дней
         prev_to = today - timedelta(days=7)
 
         logger.info(f"Период 7д: {period_from} → {period_to}")
         logger.info(f"Пред. 7д:  {prev_from} → {prev_to}")
 
-        # Агрегация одним запросом
+        # Один запрос: группируем по item_id, суммы только за нужные периоды (CASE)
         cur = conn.execute("""
             SELECT
                 item_id,
@@ -77,7 +77,7 @@ def run(client_key: str):
                 SUM(CASE WHEN stat_date BETWEEN ? AND ? THEN favorites    ELSE 0 END) AS fav_prev,
                 SUM(CASE WHEN stat_date BETWEEN ? AND ? THEN all_spend    ELSE 0 END) AS spend_prev
             FROM item_stats
-            WHERE client_key = ? AND stat_date BETWEEN ? AND ?
+            WHERE client_key = ?
             GROUP BY item_id
         """, (
             str(period_from), str(period_to),
@@ -90,7 +90,7 @@ def run(client_key: str):
             str(prev_from), str(prev_to),
             str(prev_from), str(prev_to),
             str(prev_from), str(prev_to),
-            client_key, str(prev_from), str(period_to),
+            client_key,
         ))
         rows = cur.fetchall()
         logger.info(f"Строк после агрегации: {len(rows)}")
@@ -114,17 +114,22 @@ def run(client_key: str):
             contacts_7d = r["contacts_7d"] or 0
             fav_7d = r["fav_7d"] or 0
             spend_7d = r["spend_7d"] or 0.0
-
+            imp_prev = r["imp_prev"] or 0
             views_prev = r["views_prev"] or 0
             contacts_prev = r["contacts_prev"] or 0
+            fav_prev = r["fav_prev"] or 0
             spend_prev = r["spend_prev"] or 0.0
+
+            # Логирование для проблемного ID
+            if r["item_id"] == 8035275940:
+                logger.info(f"DEBUG item_id={r['item_id']}: spend_7d={spend_7d}, spend_prev={spend_prev}")
 
             ctr_7d = safe_div(views_7d, imp_7d)
             cvr_7d = safe_div(contacts_7d, views_7d)
             cpl_7d = safe_div(spend_7d, contacts_7d)
             cpv_7d = safe_div(spend_7d, views_7d)
 
-            ctr_prev = safe_div(views_prev, r["imp_prev"] or 0)
+            ctr_prev = safe_div(views_prev, imp_prev)
             cvr_prev = safe_div(contacts_prev, views_prev)
             cpl_prev = safe_div(spend_prev, contacts_prev)
             cpv_prev = safe_div(spend_prev, views_prev)
@@ -136,13 +141,23 @@ def run(client_key: str):
                 str(period_from), str(period_to),
                 imp_7d, views_7d, contacts_7d, fav_7d, round(spend_7d, 2),
                 ctr_7d, cvr_7d, cpl_7d, cpv_7d,
-                r["imp_prev"] or 0, views_prev, contacts_prev,
-                r["fav_prev"] or 0, round(spend_prev, 2),
+                imp_prev, views_prev, contacts_prev, fav_prev, round(spend_prev, 2),
                 ctr_prev, cvr_prev, cpl_prev, cpv_prev,
                 delta_pct(contacts_7d, contacts_prev),
                 delta_pct(cpl_7d, cpl_prev),
                 bid_code, None, now,
             ))
+
+
+
+
+
+# ... весь код до этого места без изменений ...
+
+        # Полностью удаляем старые данные для клиента
+        conn.execute("DELETE FROM current_stats WHERE client_key = ?", (client_key,))
+        logger.info(f"Старые данные для {client_key} удалены")
+
 
         conn.executemany("""
             INSERT OR REPLACE INTO current_stats (
