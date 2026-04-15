@@ -1,55 +1,65 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-apply_bids.py — Применение ставок из Google Sheets через Avito API (упрощённая версия для одного клиента).
+scripts/apply_bids.py — Применение ставок из Google Sheets через Avito API.
 
 Использование:
-    python -m stavmnog.scripts.apply_bids --client=evg
-    python -m stavmnog.scripts.apply_bids --client=evg --ignore-date   # обработать все строки, игнорируя !Применил и дату
-    python -m stavmnog.scripts.apply_bids --client=evg --respect-date  # уважать !Применил=да и дату сегодня
+    python scripts/apply_bids.py --client=coffee
+    python scripts/apply_bids.py --client=coffee --respect-date
 """
 
 import argparse
 import json
 import os
+import sys
 import time
+from collections import defaultdict
 from datetime import datetime
 from typing import Optional
 
 import pandas as pd
-import requests
 
 from shared.config import DB_CONF
 from shared.avito_api import get_avito_token, avito_get, avito_post
-from shared.logger import write_log
 
 from stavmnog.config import get_client_config, STATUS_DIR, LOG_DIR, SHEET_COLUMNS
-from stavmnog.utils.formulas import col_letter, norm_avito_id, build_header_index
+from stavmnog.utils.formulas import col_letter, norm_avito_id, build_header_index, open_worksheet
 from stavmnog.utils.pid_lock import acquire_lock, release_lock
-
-# ═══════════════════════════════════════════
-# КОНСТАНТЫ
-# ═══════════════════════════════════════════
 
 WINDOW_CHUNK = 1000
 BATCH_SIZE = 20
-AVITO_DELAY_SEC = 0.25
+AVITO_DELAY_SEC = 0.5   # между запросами к одному клиенту
 
-SCOPES = [
-    "https://www.googleapis.com/auth/spreadsheets",
-    "https://www.googleapis.com/auth/drive.readonly",
-]
+
+# ═══════════════════════════════════════════
+# ЛОГИРОВАНИЕ
+# ═══════════════════════════════════════════
+
+class Logger:
+    """Простой логгер: в stdout (nohup пишет в файл) и с timestamp."""
+    def __init__(self, prefix=""):
+        self.prefix = prefix
+
+    def info(self, msg):
+        ts = datetime.now().strftime("%H:%M:%S")
+        print(f"{ts} {self.prefix} {msg}", flush=True)
+
+    def warn(self, msg):
+        self.info(f"⚠ {msg}")
+
+    def err(self, msg):
+        self.info(f"✗ {msg}")
 
 
 # ═══════════════════════════════════════════
 # УТИЛИТЫ
 # ═══════════════════════════════════════════
 
-def _today_dm() -> str:
+def _today_dm():
     return datetime.now().strftime("%d.%m")
 
 
-def _write_json(path: str, obj: dict) -> None:
+def _write_json(path, obj):
     os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
     tmp = path + ".tmp"
     with open(tmp, "w", encoding="utf-8") as f:
@@ -62,52 +72,7 @@ def _chunked(lst, n):
         yield lst[i:i + n]
 
 
-def _extract_sheet_id(raw: str) -> str:
-    import re
-    if "/d/" in raw:
-        m = re.search(r"/d/([a-zA-Z0-9_-]+)", raw)
-        if m:
-            return m.group(1)
-    return raw.strip()
-
-
-# ═══════════════════════════════════════════
-# GOOGLE SHEETS
-# ═══════════════════════════════════════════
-
-def _open_worksheet(sheet_id_raw: str, gid: int, cred_file: str):
-    import gspread
-    from google.oauth2.service_account import Credentials
-
-    sheet_id = _extract_sheet_id(sheet_id_raw)
-    creds = Credentials.from_service_account_file(cred_file, scopes=SCOPES)
-    gc = gspread.authorize(creds)
-    sh = gc.open_by_key(sheet_id)
-    ws = sh.get_worksheet_by_id(gid) if hasattr(sh, "get_worksheet_by_id") else None
-    if ws is None:
-        ws = sh.get_worksheet(0)
-    return ws
-
-
-def _get_header(ws) -> list:
-    return [h.strip() for h in ws.row_values(1)]
-
-
-def _ensure_columns(ws, header, required):
-    changed = False
-    for col in required:
-        if col not in header:
-            header.append(col)
-            changed = True
-    if changed:
-        last = col_letter(len(header))
-        ws.update(f"A1:{last}1", [header])
-    hdr = _get_header(ws)
-    idx = {name: i + 1 for i, name in enumerate(hdr)}
-    return hdr, idx
-
-
-def _get_last_row(ws, anchor_col: int) -> int:
+def _get_last_row(ws, anchor_col):
     vals = ws.col_values(anchor_col)
     i = len(vals) - 1
     while i >= 0 and (vals[i] is None or str(vals[i]).strip() == ""):
@@ -115,26 +80,26 @@ def _get_last_row(ws, anchor_col: int) -> int:
     return max(1, i + 1)
 
 
-def _batch_update_retry(ws, updates, max_retries=3):
+def _batch_update_retry(ws, updates, logger, max_retries=3):
     for attempt in range(max_retries):
         try:
             ws.batch_update(updates, value_input_option="USER_ENTERED")
             return
         except Exception as e:
             err = str(e)
-            if "429" in err or "503" in err:
-                wait = 60 * (attempt + 1)
-                write_log(f"  Sheets API limit — ждём {wait}с (попытка {attempt + 1})")
+            if ("429" in err or "503" in err) and attempt < max_retries - 1:
+                wait = 30 * (attempt + 1)
+                logger.warn(f"Sheets API limit, ждём {wait}с")
                 time.sleep(wait)
             else:
                 raise
 
 
 # ═══════════════════════════════════════════
-# AVITO API — СТАВКИ
+# AVITO API
 # ═══════════════════════════════════════════
 
-def get_bid_limits(token: str, item_id: int) -> Optional[dict]:
+def get_bid_limits(token, item_id, logger):
     url = f"https://api.avito.ru/cpxpromo/1/getBids/{item_id}"
     headers = {"Authorization": f"Bearer {token}"}
     r = avito_get(url, headers)
@@ -142,24 +107,21 @@ def get_bid_limits(token: str, item_id: int) -> Optional[dict]:
         return None
     try:
         j = r.json()
+        manual = j.get("manual") or {}
+        return {
+            "minBidPenny": manual.get("minBidPenny"),
+            "maxBidPenny": manual.get("maxBidPenny"),
+        }
     except Exception:
         return None
-    manual = j.get("manual") or {}
-    return {
-        "minBidPenny": manual.get("minBidPenny"),
-        "maxBidPenny": manual.get("maxBidPenny"),
-        "recBidPenny": manual.get("recBidPenny"),
-    }
 
 
-def set_manual_bid(token: str, ad_id: int, bid_penny: int,
-                   action_type_id: int = 5, limit_penny: Optional[int] = None):
+def set_manual_bid(token, ad_id, bid_penny, limit_penny=None):
     url = "https://api.avito.ru/cpxpromo/1/setManual"
     headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
-    payload = {"itemID": ad_id, "bidPenny": bid_penny, "actionTypeID": action_type_id}
+    payload = {"itemID": ad_id, "bidPenny": bid_penny, "actionTypeID": 5}
     if limit_penny is not None:
         payload["limitPenny"] = limit_penny
-
     response = avito_post(url, headers, payload)
     if response is None:
         return 500, {"error": "No response"}
@@ -169,7 +131,7 @@ def set_manual_bid(token: str, ad_id: int, bid_penny: int,
         return response.status_code, {"error": "Invalid JSON"}
 
 
-def parse_limit_penny(raw) -> Optional[int]:
+def parse_limit_penny(raw):
     if pd.isna(raw):
         return None
     s = str(raw).strip()
@@ -181,7 +143,37 @@ def parse_limit_penny(raw) -> Optional[int]:
         return None
     if v <= 0:
         return None
-    return int(round(v * 100))
+    return int(round(v)) * 100   # целые рубли в копейках
+
+
+def parse_bid_penny(raw):
+    """Ставка из Sheets → копейки. Округляем до рубля (API требует)."""
+    if raw is None or str(raw).strip() == "":
+        return None
+    try:
+        v = float(str(raw).replace(",", "."))
+    except ValueError:
+        return None
+    if v <= 0:
+        return None
+    return int(round(v)) * 100   # целые рубли в копейках
+
+
+# ═══════════════════════════════════════════
+# СТОП-ФЛАГ
+# ═══════════════════════════════════════════
+
+def stop_requested(client_key):
+    return os.path.exists(os.path.join(STATUS_DIR, f"stop_bids_{client_key}.flag"))
+
+
+def clear_stop_flag(client_key):
+    flag = os.path.join(STATUS_DIR, f"stop_bids_{client_key}.flag")
+    if os.path.exists(flag):
+        try:
+            os.remove(flag)
+        except Exception:
+            pass
 
 
 # ═══════════════════════════════════════════
@@ -189,94 +181,90 @@ def parse_limit_penny(raw) -> Optional[int]:
 # ═══════════════════════════════════════════
 
 def main():
-    ap = argparse.ArgumentParser(description="Применение ставок Авито из Google Sheets (упрощённая версия)")
-    ap.add_argument("--client", required=True, help="Ключ клиента из clients.json")
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--client", required=True)
     ap.add_argument("--batch-size", type=int, default=BATCH_SIZE)
-    ap.add_argument("--ignore-date", action="store_true", default=True,
-                    help="Игнорировать !Применил и дату — обрабатывать всё (по умолчанию)")
-    ap.add_argument("--respect-date", dest="ignore_date", action="store_false",
-                    help="Уважать !Применил=да и пропускать уже применённые сегодня")
+    ap.add_argument("--ignore-date", action="store_true", default=True)
+    ap.add_argument("--respect-date", dest="ignore_date", action="store_false")
     args = ap.parse_args()
 
-    write_log(f"[bids] ПРЕ СТАРТ | {args.client}")
+    client = args.client
+    log = Logger(f"[bids:{client}]")
+    log.info("=" * 50)
+    log.info(f"СТАРТ | ignore_date={args.ignore_date}")
 
     os.makedirs(LOG_DIR, exist_ok=True)
     os.makedirs(STATUS_DIR, exist_ok=True)
+    clear_stop_flag(client)
 
-    # Блокировка (раскомментировать при необходимости)
-    # if not acquire_lock("bids", args.client):
-    #     return
+    # PID-lock чтобы kill.php работал
+    if not acquire_lock("bids", client):
+        log.warn("Уже запущен — выход")
+        return
 
-    cfg = get_client_config(args.client)
-    sheet_id = cfg["sheet_id"]
-    gid = cfg.get("sheet_bids_gid", 0)
-    key_file = os.path.join(DB_CONF, cfg["google_key_file"])
-
-    # Получаем токен один раз для всего клиента
-    token = get_avito_token(cfg["client_id"], cfg["client_secret"])
-    write_log(f"[bids] Токен получен для {args.client}")
-
-    status_path = os.path.join(STATUS_DIR, f"bids_{args.client}.json")
-    failed_path = os.path.join(
-        STATUS_DIR, f"failed_ids_{args.client}_{datetime.now().strftime('%Y-%m-%d')}.json"
-    )
+    status_path = os.path.join(STATUS_DIR, f"bids_{client}.json")
+    failed_path = os.path.join(STATUS_DIR, f"failed_ids_{client}_{datetime.now().strftime('%Y-%m-%d')}.json")
     _write_json(failed_path, [])
 
+    started_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     status = {
-        "ts": time.time(),
-        "today": _today_dm(),
+        "operation": "apply_bids",
+        "client": client,
         "status": "running",
+        "started_at": started_at,
+        "finished_at": None,
+        "today": _today_dm(),
         "total": 0,
         "overall": {"taken": 0, "done": 0, "ok": 0, "err": 0, "skip": 0},
-        "current": {},
+        "error": None,
     }
     _write_json(status_path, status)
 
     try:
-        write_log(f"[bids] СТАРТ | {args.client}")
+        cfg = get_client_config(client)
+        key_file = os.path.join(DB_CONF, cfg["google_key_file"])
 
-        ws = _open_worksheet(sheet_id, gid, key_file)
-        hdr_idx = build_header_index(ws, SHEET_COLUMNS, logger=None)
+        token = get_avito_token(cfg["client_id"], cfg["client_secret"])
+        log.info("Токен Авито получен")
 
-        anchor = hdr_idx.get("AvitoId") or 1
-        last_row = _get_last_row(ws, anchor)
+        ws = open_worksheet(cfg["sheet_id"], cfg["sheet_bids"], key_file, logger=log)
+        hdr_idx = build_header_index(ws, SHEET_COLUMNS, logger=log)
+
+        last_row = _get_last_row(ws, hdr_idx["AvitoId"])
         if last_row < 2:
-            write_log("[bids] Нет данных в листе")
+            log.info("Нет данных в листе")
             status["status"] = "done"
+            status["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             _write_json(status_path, status)
             return
 
         status["total"] = last_row - 1
         _write_json(status_path, status)
 
-        # Функция получения 0-based индекса колонки
-        def col(name):
+        def col_0(name):
             return hdr_idx[name] - 1
 
         start_row = 2
         today_dm = _today_dm()
 
         while start_row <= last_row:
-            # Проверка стоп-флага
-            stop_flag = os.path.join(STATUS_DIR, f"stop_bids_{args.client}.flag")
-            if os.path.exists(stop_flag):
-                write_log("[bids] СТОП — флаг из панели")
+            if stop_requested(client):
+                log.info("СТОП — флаг из панели")
                 status["status"] = "stopped"
+                status["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 _write_json(status_path, status)
-                try:
-                    os.remove(stop_flag)
-                except Exception:
-                    pass
+                clear_stop_flag(client)
                 return
 
             end_row = min(last_row, start_row + WINDOW_CHUNK - 1)
             last_col_letter = col_letter(max(hdr_idx.values()))
             rows = ws.get(f"A{start_row}:{last_col_letter}{end_row}")
 
+            # Читаем по именам колонок
             recs = []
             for i, row_vals in enumerate(rows):
                 def v(name):
-                    idx = col(name)
+                    idx = col_0(name)
                     return row_vals[idx] if idx < len(row_vals) else ""
                 recs.append({
                     "__row__":         start_row + i,
@@ -287,7 +275,7 @@ def main():
                     "дата применения": v("дата применения"),
                 })
 
-            # Фильтрация кандидатов
+            # Фильтрация
             candidates = []
             clear_updates = []
             stats_f = {"total": 0, "already_da": 0, "same_date": 0,
@@ -298,31 +286,29 @@ def main():
                 rn = r["__row__"]
                 prim = str(r["!Применил"]).strip().lower()
                 dat = str(r["дата применения"]).strip()
-                avito_raw = str(r["AvitoId"]).strip()
-                bid_raw = str(r["Ставка"]).strip()
 
-                avito_norm = norm_avito_id(avito_raw)
+                avito_norm = norm_avito_id(r["AvitoId"])
                 if not avito_norm:
                     stats_f["no_avito"] += 1
                     continue
                 r["AvitoId"] = avito_norm
 
-                if not bid_raw:
+                bid_penny = parse_bid_penny(r["Ставка"])
+                if bid_penny is None:
                     stats_f["no_bid"] += 1
                     continue
+                r["_bid_penny"] = bid_penny
 
                 if args.ignore_date:
-                    # Принудительно очищаем флаги перед обработкой
                     if prim == "да" or dat:
                         clear_updates += [
                             {"range": f"{col_letter(hdr_idx['!Применил'])}{rn}", "values": [[""]]},
                             {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[""]]},
                         ]
                     stats_f["to_do"] += 1
-                    candidates.append((r, "do"))
+                    candidates.append(r)
                     continue
 
-                # Режим с уважением флагов
                 if prim == "да":
                     stats_f["already_da"] += 1
                     continue
@@ -331,13 +317,12 @@ def main():
                     continue
 
                 stats_f["to_do"] += 1
-                candidates.append((r, "do"))
+                candidates.append(r)
 
-            write_log(f"[bids] ФИЛЬТР {start_row}-{end_row}: {stats_f}")
+            log.info(f"Окно {start_row}-{end_row}: {stats_f}")
 
             if clear_updates:
-                write_log(f"[bids] Сброс !Применил/дата для {len(clear_updates)//2} строк")
-                _batch_update_retry(ws, clear_updates)
+                _batch_update_retry(ws, clear_updates, log)
 
             if not candidates:
                 start_row = end_row + 1
@@ -345,86 +330,63 @@ def main():
 
             # Обработка батчами
             for batch in _chunked(candidates, args.batch_size):
-                if os.path.exists(stop_flag):
-                    write_log("[bids] СТОП — флаг из панели")
+                if stop_requested(client):
+                    log.info("СТОП — флаг из панели (внутри батча)")
                     status["status"] = "stopped"
+                    status["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                     _write_json(status_path, status)
+                    clear_stop_flag(client)
                     return
 
                 updates = []
                 failed_ids = []
-                batch_ok = batch_err = batch_skip = batch_done = 0
+                batch_ok = batch_err = 0
 
-                for rec, kind in batch:
+                for rec in batch:
                     rn = rec["__row__"]
-                    if kind == "skip":
-                        # На самом деле kind "skip" уже отфильтрован выше, оставлено на всякий случай
-                        updates += [
-                            {"range": f"{col_letter(hdr_idx['Статус'])}{rn}", "values": [["SKIP"]]},
-                            {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [["нет AvitoId или ставки"]]},
-                            {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[today_dm]]},
-                        ]
-                        batch_skip += 1
-                        batch_done += 1
-                        continue
+                    ad_id = int(rec["AvitoId"])
+                    bid_penny = rec["_bid_penny"]
 
-                    avito_id_s = str(rec["AvitoId"]).strip()
-                    bid_s = str(rec["Ставка"]).strip()
-                    try:
-                        bid_penny = int(round(float(bid_s.replace(",", ".")) * 100))
-                    except Exception:
-                        updates += [
-                            {"range": f"{col_letter(hdr_idx['Статус'])}{rn}", "values": [["ERR"]]},
-                            {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [[f"неверная ставка '{bid_s}'"]]},
-                            {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[today_dm]]},
-                        ]
-                        batch_err += 1
-                        batch_done += 1
-                        continue
-
-                    limit_penny = parse_limit_penny(rec.get("Лимит"))
-                    ad_id = int(float(avito_id_s))
-
-                    # Получить лимиты API и скорректировать ставку
-                    limits = get_bid_limits(token, ad_id)
+                    # Коррекция по лимитам API (если получилось запросить)
+                    limits = get_bid_limits(token, ad_id, log)
                     final_bid = bid_penny
                     if limits is not None:
                         min_b = limits.get("minBidPenny")
                         max_b = limits.get("maxBidPenny")
                         if isinstance(min_b, int) and final_bid < min_b:
-                            final_bid = min_b
+                            final_bid = int(round(min_b / 100)) * 100
                         if isinstance(max_b, int) and final_bid > max_b:
-                            final_bid = max_b
+                            final_bid = int(round(max_b / 100)) * 100
 
-                    # Отправить ставку
-                    code, resp = set_manual_bid(token, ad_id, final_bid, limit_penny=limit_penny)
+                    limit_penny = parse_limit_penny(rec.get("Лимит"))
+                    code, resp = set_manual_bid(token, ad_id, final_bid, limit_penny)
 
                     if code == 200:
                         updates += [
                             {"range": f"{col_letter(hdr_idx['Статус'])}{rn}", "values": [["OK"]]},
-                            {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [["-"]]},
+                            {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [[f"{final_bid//100}₽"]]},
                             {"range": f"{col_letter(hdr_idx['!Применил'])}{rn}", "values": [["да"]]},
                             {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[today_dm]]},
                         ]
                         batch_ok += 1
                     else:
                         msg = resp.get("message") if isinstance(resp, dict) else str(resp)
+                        msg = str(msg)[:200] if msg else f"HTTP {code}"
+                        log.err(f"row={rn} id={ad_id} bid={final_bid}: {msg}")
                         updates += [
                             {"range": f"{col_letter(hdr_idx['Статус'])}{rn}", "values": [["ERR"]]},
-                            {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [[str(msg)[:200]]]},
+                            {"range": f"{col_letter(hdr_idx['Сообщение'])}{rn}", "values": [[msg]]},
                             {"range": f"{col_letter(hdr_idx['дата применения'])}{rn}", "values": [[today_dm]]},
                         ]
                         batch_err += 1
-                        failed_ids.append(avito_id_s)
+                        failed_ids.append(str(ad_id))
 
-                    batch_done += 1
                     time.sleep(AVITO_DELAY_SEC)
 
-                # Записать результаты в Google Sheets
+                # Запись результатов
                 if updates:
-                    _batch_update_retry(ws, updates)
+                    _batch_update_retry(ws, updates, log)
 
-                # Сохранить ошибочные ID
                 if failed_ids:
                     try:
                         cur = []
@@ -436,37 +398,34 @@ def main():
                     except Exception:
                         pass
 
-                # Обновить статус
                 status["overall"]["taken"] += len(batch)
-                status["overall"]["done"] += batch_done
+                status["overall"]["done"] += len(batch)
                 status["overall"]["ok"] += batch_ok
                 status["overall"]["err"] += batch_err
-                status["overall"]["skip"] += batch_skip
-                status["current"] = {}
-                status["ts"] = time.time()
                 _write_json(status_path, status)
+                log.info(f"Батч: OK={batch_ok} ERR={batch_err} | всего OK={status['overall']['ok']} ERR={status['overall']['err']}")
 
             start_row = end_row + 1
 
-        # Завершение
         status["status"] = "done"
-        status["current"] = {"state": "done"}
-        status["ts"] = time.time()
+        status["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _write_json(status_path, status)
 
         ov = status["overall"]
-        write_log(f"[bids] ГОТОВО | {args.client} | "
-                  f"всего={ov['taken']} OK={ov['ok']} ERR={ov['err']} SKIP={ov['skip']}")
+        log.info(f"ГОТОВО | taken={ov['taken']} OK={ov['ok']} ERR={ov['err']}")
 
     except Exception as e:
-        write_log(f"[bids] ОШИБКА | {args.client} | {e}")
+        log.err(f"Исключение: {e}")
+        import traceback
+        traceback.print_exc()
         status["status"] = "error"
         status["error"] = str(e)[:500]
+        status["finished_at"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         _write_json(status_path, status)
+        sys.exit(1)
 
     finally:
-        # release_lock("bids", args.client)
-        pass
+        release_lock("bids", client)
 
 
 if __name__ == "__main__":

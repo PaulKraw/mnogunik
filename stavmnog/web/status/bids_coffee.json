@@ -1,14 +1,16 @@
 {
-  "ts": 1776180196.0681934,
+  "ts": 1776180441.842719,
   "today": "14.04",
-  "status": "running",
+  "status": "done",
   "total": 128,
   "overall": {
-    "taken": 40,
-    "done": 40,
-    "ok": 36,
-    "err": 4,
+    "taken": 128,
+    "done": 128,
+    "ok": 109,
+    "err": 19,
     "skip": 0
   },
-  "current": {}
+  "current": {
+    "state": "done"
+  }
 }

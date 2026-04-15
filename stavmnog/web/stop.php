@@ -1,11 +1,8 @@
 <?php
 define('ACCESS_KEY', 'YOUR_SECRET_KEY');
-// define('STATUS_DIR', dirname(__FILE__) . '/status');
-
 define('MONOREPO_ROOT', '/var/www/mnogunik.ru/mng');
 define('STAVMNOG_DIR', MONOREPO_ROOT . '/stavmnog');
 define('STATUS_DIR',   STAVMNOG_DIR . '/web/status');
-
 
 header('Content-Type: application/json');
 
@@ -17,10 +14,11 @@ $client = preg_replace('/[^a-z0-9_]/i', '', $_GET['client'] ?? '');
 $op     = preg_replace('/[^a-z0-9_]/i', '', $_GET['op']     ?? '');
 if (!$client) { echo '{"error":"client required"}'; exit; }
 
+// Мапим op → имя флага (совпадает с тем что читает Python)
 $flags = [
     'download'     => "stop_download_{$client}.flag",
-    'build_export' => "stop_build_{$client}.flag",
-    'bids'   => "stop_bids_{$client}.flag",
+    'build_export' => "stop_build_stats_{$client}.flag",  // build_stats читает этот
+    'bids'         => "stop_bids_{$client}.flag",
 ];
 
 $created = [];
@@ -28,7 +26,6 @@ if ($op && isset($flags[$op])) {
     file_put_contents(STATUS_DIR . '/' . $flags[$op], date('Y-m-d H:i:s'));
     $created[] = $flags[$op];
 } else {
-    // без op — ставим все флаги
     foreach ($flags as $f) {
         file_put_contents(STATUS_DIR . '/' . $f, date('Y-m-d H:i:s'));
         $created[] = $f;

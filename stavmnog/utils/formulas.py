@@ -57,7 +57,8 @@ def calc_bid(
         inner = prev_bid
 
     result = min(maxx, inner) if maxx > 0 else inner
-    return round(result, 2)
+    # ставка должна быть кратна рублю — иначе Avito API отдаёт 400
+    return int(round(result))
 
 
 def safe_div(a: float, b: float) -> float:
@@ -115,7 +116,55 @@ def norm_avito_id(raw) -> str:
         return ""
     
 
+# ═══════════════════════════════════════════
+# GOOGLE SHEETS — ОТКРЫТИЕ ЛИСТА
+# ═══════════════════════════════════════════
 
+SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.readonly",
+]
+
+
+def _extract_sheet_id(raw: str) -> str:
+    """ID таблицы из URL или уже чистого ID."""
+    if "/d/" in raw:
+        m = re.search(r"/d/([a-zA-Z0-9_-]+)", raw)
+        if m:
+            return m.group(1)
+    return raw.strip()
+
+
+def open_worksheet(sheet_id_raw: str, sheet_name: str, cred_file: str, logger=None):
+    """
+    Открывает worksheet по ИМЕНИ (не по gid).
+    gspread сам ищет лист с таким именем — не надо хранить gid в конфиге.
+    """
+    import gspread
+    from google.oauth2.service_account import Credentials
+
+    sheet_id = _extract_sheet_id(sheet_id_raw)
+    creds = Credentials.from_service_account_file(cred_file, scopes=SCOPES)
+    gc = gspread.authorize(creds)
+    sh = gc.open_by_key(sheet_id)
+
+    try:
+        ws = sh.worksheet(sheet_name)
+    except Exception as e:
+        available = [w.title for w in sh.worksheets()]
+        raise ValueError(
+            f"Лист '{sheet_name}' не найден. Доступные: {available}"
+        ) from e
+
+    if logger:
+        logger.info(f"Открыт лист '{sheet_name}' (id={ws.id})")
+    return ws
+
+
+
+# ═══════════════════════════════════════════
+# ИНДЕКС КОЛОНОК ПО ИМЕНИ
+# ═══════════════════════════════════════════
 
 def build_header_index(ws, required_columns, logger=None):
     """
@@ -138,9 +187,8 @@ def build_header_index(ws, required_columns, logger=None):
             header.append(name)
             added.append(name)
     if added:
-        from stavmnog.utils.formulas import col_letter
         last = col_letter(len(header))
-        ws.update(f"A1:{last}1", [header])
+        ws.update(range_name=f"A1:{last}1", values=[header], value_input_option="USER_ENTERED")
         if logger:
             logger.info(f"В шапку добавлены колонки: {added}")
     return {name: i + 1 for i, name in enumerate(header)}

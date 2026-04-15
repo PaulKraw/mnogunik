@@ -28,6 +28,13 @@ if (!$auth && isset($_POST['key'])) {
 }
 if (isset($_GET['logout'])) { setcookie('panel_key','',0,'/'); header('Location: ./'); exit; }
 
+// Очистка старых стоп-флагов (старше 5 минут)
+foreach (glob(STATUS_DIR . '/stop_*.flag') as $flag) {
+    if (time() - filemtime($flag) > 300) {
+        @unlink($flag);
+    }
+}
+
 function load_clients(): array {
     if (!file_exists(CONFIG_PATH)) return [];
     $d = json_decode(file_get_contents(CONFIG_PATH), true);
